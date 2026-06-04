@@ -1,8 +1,7 @@
 Package: exnexSurv
 Type: Package
 Title: Bayesian EXNEX Models for Survival Analysis in Basket Trials
-Version: 0.0.1
-Date: 2026-05-21
+Version: 0.1.1
 Authors@R: person("Victor", "Ney", role = c("aut", "cre"),
   email = "victorney@ime.usp.br")
 Description: Implements the Bayesian Exchangeable Non-Exchangeable (EXNEX) 
@@ -11,7 +10,10 @@ Description: Implements the Bayesian Exchangeable Non-Exchangeable (EXNEX)
   sampler supporting EXNEX, complete pooling, and no pooling models to 
   facilitate methodological comparisons and simulation studies.
 License: MIT + file LICENSE
-Imports: Rcpp (>= 1.1.1)
+Imports:
+  Rcpp (>= 1.1.1),
+  hardhat (>= 1.4.0),
+  checkmate (>= 2.1.0)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.3.3
 Encoding: UTF-8
+Config/roxygen2/version: 8.0.0

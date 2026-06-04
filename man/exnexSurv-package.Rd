@@ -11,5 +11,10 @@ Implements the Bayesian Exchangeable Non-Exchangeable (EXNEX) framework for righ
 \author{
 \strong{Maintainer}: Victor Ney \email{victorney@ime.usp.br}
 
+Authors:
+\itemize{
+  \item Victor Ney \email{victorney@ime.usp.br}
+}
+
 }
 \keyword{internal}
