@@ -36,14 +36,65 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
 
   int n = time.n_elem;
 
-  // extract dimensions
-  int K = arma::max(group); // Number of groups
+  // ========== VALIDATE MCMC PARAMETERS ==========
+  // Check for integer underflow: warmup >= iter causes n_samples to underflow
+  if (iter <= 0) {
+    Rcpp::stop("iter must be positive.");
+  }
+  if (warmup < 0) {
+    Rcpp::stop("warmup must be non-negative.");
+  }
+  if (warmup >= iter) {
+    Rcpp::stop("warmup must be strictly less than iter. Got iter=" +
+               std::to_string(iter) + ", warmup=" + std::to_string(warmup));
+  }
+
+  // ========== VALIDATE VECTOR LENGTHS ==========
+  // Ensure all vectors have matching length
+  if (event.n_elem != n) {
+    Rcpp::stop("event must have the same length as time. Got time.n_elem=" +
+               std::to_string(n) + ", event.n_elem=" + std::to_string(event.n_elem));
+  }
+  if (group.n_elem != n) {
+    Rcpp::stop("group must have the same length as time. Got time.n_elem=" +
+               std::to_string(n) + ", group.n_elem=" + std::to_string(group.n_elem));
+  }
+  if (X.n_rows > 0 && X.n_rows != n) {
+    Rcpp::stop("X must have the same number of rows as time. Got time.n_elem=" +
+               std::to_string(n) + ", X.n_rows=" + std::to_string(X.n_rows));
+  }
+
+  // ========== VALIDATE GROUP VECTOR ==========
+  // Group must contain integers >= 1
+  double min_group = arma::min(group);
+  double max_group = arma::max(group);
+  
+  if (min_group < 1.0) {
+    Rcpp::stop("All group values must be >= 1. Found minimum: " +
+               std::to_string(min_group));
+  }
+  
+  // Check that group values are actually integers
+  for (int i = 0; i < group.n_elem; ++i) {
+    if (group(i) != std::floor(group(i))) {
+      Rcpp::stop("Group must contain integer values only. Found non-integer: " +
+                 std::to_string(group(i)) + " at position " + std::to_string(i + 1));
+    }
+  }
+
+  // ========== EXTRACT DIMENSIONS (NOW SAFE) ==========
+  int K = static_cast<int>(max_group); // Number of groups
   int P = X.n_cols; // Number of covariates (can be 0)
   int n_samples = iter - warmup; // Number of samples to retain
   int n_cols_out = K + P + 1; // Total columns: theta + beta + sigma
 
   if (K < 1) {
     Rcpp::stop("At least one group must be present.");
+  }
+  
+  if (n_samples <= 0) {
+    Rcpp::stop("No samples to retain after warmup. n_samples=" + 
+               std::to_string(n_samples));
   }
 
   // each row is an MCMC iteration (after warmup)

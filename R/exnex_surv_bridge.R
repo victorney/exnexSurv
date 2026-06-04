@@ -54,12 +54,25 @@ exnex_surv_bridge <- function(
   n_encoded_group_cols <- NA_integer_
 
   if (is.null(group_col)) {
-    # handle group from predictors (one-hot encoded or factor)
+    # handle group from predictors
     first_col <- predictors[[1]]
 
     if (is.numeric(first_col) && all(first_col %in% c(0, 1))) {
-      group_vec <- .extract_group_from_encoded(predictors)
-      n_encoded_group_cols <- .count_group_columns(predictors)
+      tryCatch(
+        {
+          group_vec <- .extract_group_from_encoded(predictors)
+          n_encoded_group_cols <- .count_group_columns(predictors)
+        },
+        error = function(e) {
+          stop(
+            "Failed to extract group from one-hot encoded predictors. ",
+            "This may indicate hardhat encoding mismatch or invalid column names. ",
+            "Original error: ",
+            conditionMessage(e),
+            call. = FALSE
+          )
+        }
+      )
     } else if (is.factor(first_col)) {
       group_vec <- as.numeric(first_col)
       n_encoded_group_cols <- 1
@@ -244,6 +257,7 @@ exnex_surv_bridge <- function(
 
 #' Extract group vector from one-hot encoded predictors
 #' Assumes first set of consecutive columns with same prefix form the group
+#' Validates proper one-hot encoding: exactly one 1 per row
 #' @keywords internal
 .extract_group_from_encoded <- function(predictors) {
   col_names <- colnames(predictors)
@@ -255,20 +269,67 @@ exnex_surv_bridge <- function(
     stop("Could not identify group columns in predictors.", call. = FALSE)
   }
 
-  # reconstruct group based on active indicator
+  # validate one-hot encoding
   group_data <- as.matrix(predictors[, group_cols, drop = FALSE])
+  row_sums <- rowSums(group_data)
+
+  if (!all(row_sums == 1)) {
+    bad_rows <- which(row_sums != 1)
+    stop(
+      "Invalid one-hot encoding: ",
+      length(bad_rows),
+      " row(s) do not have exactly one 1. ",
+      "First bad row: ",
+      bad_rows[1],
+      " (sum=",
+      row_sums[bad_rows[1]],
+      ")",
+      call. = FALSE
+    )
+  }
+
+  # reconstruct group
   group_vec <- apply(group_data, 1, function(row) {
     which(row == 1)
   })
+
+  if (!is.numeric(group_vec)) {
+    stop(
+      "Failed to extract group vector. Result is ",
+      class(group_vec)[1],
+      " instead of numeric.",
+      call. = FALSE
+    )
+  }
+
+  group_vec <- as.numeric(group_vec)
 
   return(group_vec)
 }
 
 #' Count number of group columns in one-hot encoded predictors
+#' Uses the same validation as extract_group_from_encoded to be consistent
 #' @keywords internal
 .count_group_columns <- function(predictors) {
   col_names <- colnames(predictors)
   first_name <- col_names[1]
   base_name <- gsub("[0-9]+$", "", first_name)
-  length(grep(paste0("^", base_name), col_names))
+
+  group_cols <- grep(paste0("^", base_name), col_names)
+
+  if (length(group_cols) == 0) {
+    stop("Could not identify group columns in predictors.", call. = FALSE)
+  }
+
+  # validate one-hot encoding
+  group_data <- as.matrix(predictors[, group_cols, drop = FALSE])
+
+  if (!all(group_data %in% c(0, 1))) {
+    stop(
+      "Group columns do not contain only 0/1 values (not one-hot encoded).",
+      call. = FALSE
+    )
+  }
+
+  return(length(group_cols))
 }
