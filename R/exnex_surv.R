@@ -91,6 +91,17 @@ exnex_surv.formula <- function(
     )
   }
 
+  if (is.null(group_col)) {
+    rhs_vars <- all.vars(formula[[3]])
+    if (length(rhs_vars) == 0) {
+      stop(
+        "Formula must have at least one RHS variable (the group).",
+        call. = FALSE
+      )
+    }
+    group_col <- rhs_vars[1]
+  }
+
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -179,13 +190,16 @@ exnex_surv.data.frame <- function(
     )
   }
 
+  if (is.null(group_col)) {
+    group_col <- colnames(x)[1]
+  }
+
   if (!is.null(seed)) {
     set.seed(seed)
   }
 
   original_x <- x
 
-  # standardize outcome format
   if (inherits(y, "Surv") || is.matrix(y)) {
     y_df <- data.frame(
       time = as.numeric(y[, 1]),

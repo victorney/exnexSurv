@@ -2,11 +2,13 @@
 % Please edit documentation in R/exnex_surv_bridge.R
 \name{.count_group_columns}
 \alias{.count_group_columns}
-\title{Count number of group columns in one-hot encoded predictors}
+\title{Count number of group columns in one-hot encoded predictors
+Uses the same validation as extract_group_from_encoded to be consistent}
 \usage{
 .count_group_columns(predictors)
 }
 \description{
 Count number of group columns in one-hot encoded predictors
+Uses the same validation as extract_group_from_encoded to be consistent
 }
 \keyword{internal}

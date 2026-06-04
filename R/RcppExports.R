@@ -25,9 +25,8 @@
 #'   - warmup: Warmup iterations discarded
 #'   - chains: Number of chains
 #'   - diagnostics: Diagnostic information
-#'   
+#'
 #' @keywords internal
 cpp_exnex_gibbs <- function(time, event, group, X, priors, iter, warmup, chains) {
-    .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, iter, warmup, chains)
+  .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, iter, warmup, chains)
 }
-

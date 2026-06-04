@@ -3,12 +3,14 @@
 \name{.extract_group_from_encoded}
 \alias{.extract_group_from_encoded}
 \title{Extract group vector from one-hot encoded predictors
-Assumes first set of consecutive columns with same prefix form the group}
+Assumes first set of consecutive columns with same prefix form the group
+Validates proper one-hot encoding: exactly one 1 per row}
 \usage{
 .extract_group_from_encoded(predictors)
 }
 \description{
 Extract group vector from one-hot encoded predictors
 Assumes first set of consecutive columns with same prefix form the group
+Validates proper one-hot encoding: exactly one 1 per row
 }
 \keyword{internal}
