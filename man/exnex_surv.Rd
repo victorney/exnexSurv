@@ -41,6 +41,9 @@ Can be a data frame or a formula.}
 
 \item{...}{Additional arguments passed to methods.}
 
+\item{formula}{A model formula with structure: `Surv(time, event) ~ group + covariates`.
+The first RHS variable is the group/basket assignment. Additional variables are covariates.}
+
 \item{data}{A data frame containing the variables in the formula.}
 
 \item{priors}{A list of hyperparameters. Currently a placeholder.}

@@ -10,6 +10,8 @@
 #' @param x An object containing the predictors (subgroup assignment).
 #'   Can be a data frame or a formula.
 #' @param ... Additional arguments passed to methods.
+#' @param formula A model formula with structure: `Surv(time, event) ~ group + covariates`.
+#'   The first RHS variable is the group/basket assignment. Additional variables are covariates.
 #'
 #' @return An object of class `exnex_surv` containing posterior samples and metadata.
 #'
