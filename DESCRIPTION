@@ -11,10 +11,10 @@ Description: Implements the Bayesian Exchangeable Non-Exchangeable (EXNEX)
   facilitate methodological comparisons and simulation studies.
 License: MIT + file LICENSE
 Imports:
-  Rcpp (>= 1.1.1),
   hardhat (>= 1.4.0),
   checkmate (>= 2.1.0)
 Suggests:
+  Rcpp (>= 1.1.1),
   testthat (>= 3.3.0),
   survival (>= 3.8)
 LinkingTo: Rcpp, RcppArmadillo
