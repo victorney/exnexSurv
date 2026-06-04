@@ -13,7 +13,7 @@ test_that("formula interface returns a well-formed exnex_surv object without cov
   )
 
   fit <- exnex_surv(
-    Surv(time, event) ~ group,
+    survival::Surv(time, event) ~ group,
     data = df,
     iter = 10,
     warmup = 2,
@@ -46,7 +46,7 @@ test_that("formula interface keeps covariates and returns extra beta draws", {
   )
 
   fit <- exnex_surv(
-    Surv(time, event) ~ group + x1,
+    survival::Surv(time, event) ~ group + x1,
     data = df,
     iter = 10,
     warmup = 2,
@@ -70,7 +70,7 @@ test_that("formula interface can use an explicit group_col that is not first in 
   )
 
   fit <- exnex_surv(
-    Surv(time, event) ~ x1 + grp,
+    survival::Surv(time, event) ~ x1 + grp,
     data = df,
     group_col = "grp",
     iter = 10,
@@ -148,7 +148,7 @@ test_that("invalid inputs fail early with clear errors", {
 
   expect_error(
     exnex_surv(
-      Surv(time, event) ~ group,
+      survival::Surv(time, event) ~ group,
       data = df,
       iter = 10,
       warmup = 10,
@@ -159,7 +159,7 @@ test_that("invalid inputs fail early with clear errors", {
 
   expect_error(
     exnex_surv(
-      Surv(time, event) ~ missing_group,
+      survival::Surv(time, event) ~ missing_group,
       data = df,
       iter = 10,
       warmup = 2,
