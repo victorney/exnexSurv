@@ -30,6 +30,9 @@ exnex_surv_bridge <- function(
 
   # extract outcomes
   time_vec <- .extract_time_vector(outcomes)
+  if (chains != 1) {
+    stop("Multi-chain support is not implemented yet. Use chains = 1.", call. = FALSE)
+  }
   event_vec <- .extract_event_vector(outcomes)
 
   n <- length(time_vec)

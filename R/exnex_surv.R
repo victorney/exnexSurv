@@ -68,6 +68,9 @@ exnex_surv.formula <- function(
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
+  if (chains != 1) {
+    stop("Multi-chain support is not implemented yet. Use chains = 1.", call. = FALSE)
+  }
   checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
   checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
 
@@ -100,8 +103,15 @@ exnex_surv.formula <- function(
       )
     }
     group_col <- rhs_vars[1]
+    if (!group_col %in% colnames(data)) {
+      stop(
+        "Column '",
+        group_col,
+        "' not found in data.",
+        call. = FALSE
+      )
+    }
   }
-
   if (!is.null(seed)) {
     set.seed(seed)
   }
@@ -154,10 +164,13 @@ exnex_surv.data.frame <- function(
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
+  if (chains != 1) {
+    stop("Multi-chain support is not implemented yet. Use chains = 1.", call. = FALSE)
+  }
   checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
   checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
 
-  n_y <- if (inherits(y, "Surv")) nrow(y) else nrow(y)
+  n_y <- nrow(y)
 
   if (nrow(x) != n_y) {
     stop(

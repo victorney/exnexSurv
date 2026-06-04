@@ -2,32 +2,6 @@
 #include <string>
 // [[Rcpp::depends(RcppArmadillo)]]
 
-//' Main Gibbs Sampler for EXNEX Survival Models
-//'
-//' Implements MCMC sampling for Bayesian EXNEX model with right-censored
-//' log-normal survival data. Supports optional covariates.
-//'
-//' @param time Vector of observed follow-up times (n-vector, all > 0)
-//' @param event Vector of event indicators (n-vector, 0 or 1)
-//' @param group Vector of group assignments (n-vector, integers 1 to K)
-//' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no
-//' covariates.
-//' @param priors List with prior specifications (placeholder for now)
-//' @param iter Total number of MCMC iterations
-//' @param warmup Number of iterations to discard (note: parameter is (iter -
-//' warmup))
-//' @param chains Number of independent chains to run
-//'
-//' @return List containing:
-//'   - draws: Matrix of posterior samples (iter-warmup x (K+P+1))
-//'     Columns: theta_1, ..., theta_K, beta_1, ..., beta_P, sigma
-//'   - priors: The prior list passed in
-//'   - iter: Total iterations performed
-//'   - warmup: Warmup iterations discarded
-//'   - chains: Number of chains
-//'   - diagnostics: Diagnostic information
-//'   
-//' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
                            const arma::vec &group, const arma::mat &X,

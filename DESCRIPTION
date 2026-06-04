@@ -13,9 +13,11 @@ License: MIT + file LICENSE
 Imports:
   Rcpp (>= 1.1.1),
   hardhat (>= 1.4.0),
-  checkmate (>= 2.1.0),
+  checkmate (>= 2.1.0)
+Suggests:
   testthat (>= 3.3.0),
   survival (>= 3.8)
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
 Config/roxygen2/version: 8.0.0
+Config/testthat/edition: 3

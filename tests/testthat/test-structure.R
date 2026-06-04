@@ -165,11 +165,23 @@ test_that("invalid inputs fail early with clear errors", {
       warmup = 2,
       chains = 1
     ),
-    "not found in `data`"
+    "not found in data"
   )
 
   expect_error(
     exnex_surv(df, c(1, 0, 1), iter = 10, warmup = 2, chains = 1),
     "must be a Surv object, data frame, or matrix"
+  )
+})
+
+test_that("formula interface errors when an explicit group_col is absent from data", {
+  df <- data.frame(
+    time = c(1, 2, 3, 4),
+    event = c(1, 0, 1, 0)
+  )
+
+  expect_error(
+    exnex_surv(survival::Surv(time, event) ~ x1, data = df, group_col = "missing_group", iter = 10, warmup = 2, chains = 1),
+    "Column 'missing_group' not found in data"
   )
 })
