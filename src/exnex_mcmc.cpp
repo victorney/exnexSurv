@@ -1,4 +1,5 @@
 #include <RcppArmadillo.h>
+#include <cmath>
 #include <string>
 // [[Rcpp::depends(RcppArmadillo)]]
 
