@@ -13,7 +13,7 @@ License: MIT + file LICENSE
 Imports:
   Rcpp (>= 1.1.1),
   hardhat (>= 1.4.0),
-  checkmate (>= 2.1.0),
+  checkmate (>= 2.1.0)
 Suggests:
   testthat (>= 3.3.0),
   survival (>= 3.8)
