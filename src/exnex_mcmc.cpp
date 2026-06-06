@@ -27,6 +27,13 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
 
   int n = time.n_elem;
 
+  if (n == 0) {
+    Rcpp::stop("time must have positive length.");
+  }
+
+  if (!time.is_finite() || arma::any(time <= 0)) {
+    Rcpp::stop("All survival times must be positive and finite.");
+  }
   // validate mcmc parameters
   if (iter <= 0) {
     Rcpp::stop("iter must be positive.");
