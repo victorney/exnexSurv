@@ -31,7 +31,10 @@ exnex_surv_bridge <- function(
   # extract outcomes
   time_vec <- .extract_time_vector(outcomes)
   if (chains != 1) {
-    stop("Multi-chain support is not implemented yet. Use chains = 1.", call. = FALSE)
+    stop(
+      "Multi-chain support is not implemented yet. Use chains = 1.",
+      call. = FALSE
+    )
   }
   event_vec <- .extract_event_vector(outcomes)
 
@@ -53,11 +56,9 @@ exnex_surv_bridge <- function(
   }
 
   # extract group assignment
-  # tracks number of encoded predictor columns to remove later
   n_encoded_group_cols <- NA_integer_
 
   if (is.null(group_col)) {
-    # handle group from predictors
     first_col <- predictors[[1]]
 
     if (is.numeric(first_col) && all(first_col %in% c(0, 1))) {
@@ -88,7 +89,6 @@ exnex_surv_bridge <- function(
       )
     }
   } else {
-    # handle group from original data
     if (!group_col %in% colnames(original_data)) {
       stop(
         "Column '",
@@ -130,18 +130,15 @@ exnex_surv_bridge <- function(
       cov_names <- character(0)
     }
   } else {
-    group_cols <- grep(paste0("^", group_col), colnames(predictors))
+    group_only <- hardhat::mold(
+      stats::reformulate(group_col),
+      original_data
+    )
+    group_predictor_names <- colnames(group_only$predictors)
 
-    if (length(group_cols) > 0) {
-      X_mat <- as.matrix(predictors[, -group_cols, drop = FALSE])
-    } else if (group_col %in% colnames(predictors)) {
-      X_mat <- as.matrix(predictors[,
-        -which(colnames(predictors) == group_col),
-        drop = FALSE
-      ])
-    } else {
-      X_mat <- as.matrix(predictors)
-    }
+    keep_cols <- !colnames(predictors) %in% group_predictor_names
+    keep_cols <- keep_cols & colnames(predictors) != group_col
+    X_mat <- as.matrix(predictors[, keep_cols, drop = FALSE])
 
     cov_names <- if (ncol(X_mat) > 0) colnames(X_mat) else character(0)
   }
@@ -272,7 +269,6 @@ exnex_surv_bridge <- function(
     stop("Could not identify group columns in predictors.", call. = FALSE)
   }
 
-  # validate one-hot encoding
   group_data <- as.matrix(predictors[, group_cols, drop = FALSE])
   row_sums <- rowSums(group_data)
 
@@ -291,7 +287,6 @@ exnex_surv_bridge <- function(
     )
   }
 
-  # reconstruct group
   group_vec <- apply(group_data, 1, function(row) {
     which(row == 1)
   })
@@ -305,9 +300,7 @@ exnex_surv_bridge <- function(
     )
   }
 
-  group_vec <- as.numeric(group_vec)
-
-  return(group_vec)
+  return(as.numeric(group_vec))
 }
 
 #' Count number of group columns in one-hot encoded predictors
@@ -324,7 +317,6 @@ exnex_surv_bridge <- function(
     stop("Could not identify group columns in predictors.", call. = FALSE)
   }
 
-  # validate one-hot encoding
   group_data <- as.matrix(predictors[, group_cols, drop = FALSE])
 
   if (!all(group_data %in% c(0, 1))) {
