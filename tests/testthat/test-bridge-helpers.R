@@ -33,7 +33,7 @@ test_that("bridge helpers extract survival vectors", {
   expect_identical(exnexSurv:::.extract_event_vector(outcomes_df), c(1, 0, 1))
 })
 
-test_that("bridge helpers validate malformed outcomes and encoded groups", {
+test_that("bridge helpers validate malformed outcomes", {
   expect_error_message(
     exnexSurv:::.extract_time_vector(list(data.frame(time = 1))),
     "Outcome must contain time and event status."
@@ -42,44 +42,6 @@ test_that("bridge helpers validate malformed outcomes and encoded groups", {
   expect_error_message(
     exnexSurv:::.extract_event_vector(list(data.frame(time = 1))),
     "Outcome must contain time and event status."
-  )
-
-  predictors <- data.frame(
-    group1 = c(1, 0, 1),
-    group2 = c(0, 1, 0),
-    age = c(60, 55, 62)
-  )
-
-  expect_identical(
-    exnexSurv:::.extract_group_from_encoded(predictors),
-    c(1, 2, 1)
-  )
-  expect_identical(exnexSurv:::.count_group_columns(predictors), 2L)
-
-  bad_predictors <- data.frame(
-    group1 = c(1, 0, 1),
-    group2 = c(0, 0, 0)
-  )
-
-  expect_error_message(
-    exnexSurv:::.extract_group_from_encoded(bad_predictors),
-    "Invalid one-hot encoding:"
-  )
-
-  expect_identical(
-    exnexSurv:::.count_group_columns(data.frame(
-      foo1 = c(1, 0),
-      foo2 = c(0, 1)
-    )),
-    2L
-  )
-
-  expect_error_message(
-    exnexSurv:::.count_group_columns(data.frame(
-      group1 = c(1, 0),
-      group2 = c(2, 0)
-    )),
-    "Group columns do not contain only 0/1 values"
   )
 })
 

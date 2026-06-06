@@ -9,7 +9,7 @@
 #' @param time Vector of observed follow-up times (n-vector, all > 0)
 #' @param event Vector of event indicators (n-vector, 0 or 1)
 #' @param group Vector of group assignments (n-vector, integers 1 to K)
-#' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates.
+#' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates
 #' @param priors List with prior specifications
 #' @param iter Total number of MCMC iterations
 #' @param warmup Number of iterations to discard
@@ -18,5 +18,6 @@
 #' @return List containing posterior draws, priors, metadata, and diagnostics
 #' @keywords internal
 cpp_exnex_gibbs <- function(time, event, group, X, priors, iter, warmup, chains) {
-  .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, iter, warmup, chains)
+    .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, iter, warmup, chains)
 }
+

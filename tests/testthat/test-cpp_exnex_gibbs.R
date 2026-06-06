@@ -49,6 +49,21 @@ test_that("cpp_exnex_gibbs validates input edge cases", {
   )
 
   expect_error_message(
+    do.call(exnexSurv:::cpp_exnex_gibbs, modifyList(base_args, list(time = numeric(0)))),
+    "time must have positive length."
+  )
+
+  expect_error_message(
+    do.call(exnexSurv:::cpp_exnex_gibbs, modifyList(base_args, list(time = c(5, Inf, 12)))),
+    "All survival times must be positive and finite."
+  )
+
+  expect_error_message(
+    do.call(exnexSurv:::cpp_exnex_gibbs, modifyList(base_args, list(time = c(5, 0, 12)))),
+    "All survival times must be positive and finite."
+  )
+
+  expect_error_message(
     do.call(exnexSurv:::cpp_exnex_gibbs, modifyList(base_args, list(iter = 0))),
     "iter must be positive."
   )
@@ -75,6 +90,14 @@ test_that("cpp_exnex_gibbs validates input edge cases", {
       modifyList(base_args, list(event = c(1, 0)))
     ),
     "event must have the same length as time."
+  )
+
+  expect_error_message(
+    do.call(
+      exnexSurv:::cpp_exnex_gibbs,
+      modifyList(base_args, list(event = c(1, 2, 0)))
+    ),
+    "event must contain only 0/1 values."
   )
 
   expect_error_message(

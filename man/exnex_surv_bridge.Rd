@@ -25,7 +25,7 @@ exnex_surv_bridge(
 
 \item{chains}{Number of chains to run.}
 
-\item{group_col}{Name of the original group column (before encoding).}
+\item{group_col}{Name of the original group column.}
 
 \item{original_data}{The original data frame (before hardhat processing).}
 }
@@ -36,8 +36,7 @@ An `exnex_surv` object.
 Orchestrates data preparation, validation, and passes it to the C++ MCMC engine.
 }
 \details{
-The group variable (specified by group_col) is identified and reconstructed
-from the hardhat-processed predictors. Additional variables are treated
-as covariates in the linear predictor.
+The group variable (specified by group_col) is identified from the original
+data. Additional variables are treated as covariates in the linear predictor.
 }
 \keyword{internal}

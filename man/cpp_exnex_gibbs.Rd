@@ -13,7 +13,7 @@ cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
 
 \item{group}{Vector of group assignments (n-vector, integers 1 to K)}
 
-\item{X}{Matrix of covariates (n x P). Can be empty (n x 0) if no covariates.}
+\item{X}{Matrix of covariates (n x P). Can be empty (n x 0) if no covariates}
 
 \item{priors}{List with prior specifications}
 
