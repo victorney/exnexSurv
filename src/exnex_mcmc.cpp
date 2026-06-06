@@ -58,7 +58,7 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     Rcpp::stop("group must have the same length as time. Got time.n_elem=" +
                std::to_string(n) + ", group.n_elem=" + std::to_string(group.n_elem));
   }
-  if (X.n_rows > 0 && X.n_rows != n) {
+  if (X.n_rows != n) {
     Rcpp::stop("X must have the same number of rows as time. Got time.n_elem=" +
                std::to_string(n) + ", X.n_rows=" + std::to_string(X.n_rows));
   }
