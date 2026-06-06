@@ -11,19 +11,27 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _exnexSurv_rcpp_hello_world() {
+// cpp_exnex_gibbs
+Rcpp::List cpp_exnex_gibbs(const arma::vec& time, const arma::vec& event, const arma::vec& group, const arma::mat& X, Rcpp::List priors, const int& iter, const int& warmup, const int& chains);
+RcppExport SEXP _exnexSurv_cpp_exnex_gibbs(SEXP timeSEXP, SEXP eventSEXP, SEXP groupSEXP, SEXP XSEXP, SEXP priorsSEXP, SEXP iterSEXP, SEXP warmupSEXP, SEXP chainsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
+    Rcpp::traits::input_parameter< const arma::vec& >::type time(timeSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type event(eventSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type group(groupSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type priors(priorsSEXP);
+    Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
+    Rcpp::traits::input_parameter< const int& >::type warmup(warmupSEXP);
+    Rcpp::traits::input_parameter< const int& >::type chains(chainsSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_exnexSurv_rcpp_hello_world", (DL_FUNC) &_exnexSurv_rcpp_hello_world, 0},
+    {"_exnexSurv_cpp_exnex_gibbs", (DL_FUNC) &_exnexSurv_cpp_exnex_gibbs, 8},
     {NULL, NULL, 0}
 };
 
