@@ -1,7 +1,7 @@
 Package: exnexSurv
 Type: Package
 Title: Bayesian EXNEX Models for Survival Analysis in Basket Trials
-Version: 0.1.1
+Version: 1.0.0
 Authors@R: person("Victor", "Ney", role = c("aut", "cre"),
   email = "victorney@ime.usp.br")
 Description: Implements the Bayesian Exchangeable Non-Exchangeable (EXNEX) 
