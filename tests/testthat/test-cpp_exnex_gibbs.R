@@ -4,36 +4,48 @@ expect_error_message <- function(expr, pattern) {
   testthat::expect_match(conditionMessage(err), pattern, fixed = TRUE)
 }
 
-test_that("cpp_exnex_gibbs returns expected draws and diagnostics", {
-  res <- exnexSurv:::cpp_exnex_gibbs(
+test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
+  set.seed(2719)
+  res1 <- exnexSurv:::cpp_exnex_gibbs(
     time = c(5, 8, 12),
     event = c(1, 0, 1),
     group = c(1, 2, 1),
     X = matrix(nrow = 3, ncol = 0),
     priors = list(alpha = 1),
-    iter = 4,
+    iter = 6,
     warmup = 2,
     chains = 1
   )
 
-  expect_type(res, "list")
+  set.seed(2719)
+  res2 <- exnexSurv:::cpp_exnex_gibbs(
+    time = c(5, 8, 12),
+    event = c(1, 0, 1),
+    group = c(1, 2, 1),
+    X = matrix(nrow = 3, ncol = 0),
+    priors = list(alpha = 1),
+    iter = 6,
+    warmup = 2,
+    chains = 1
+  )
+
+  expect_type(res1, "list")
   expect_identical(
-    names(res),
+    names(res1),
     c("draws", "priors", "iter", "warmup", "chains", "diagnostics")
   )
-  expect_true(is.matrix(res$draws))
-  expect_identical(dim(res$draws), c(2L, 3L))
-  expect_identical(colnames(res$draws), c("theta_1", "theta_2", "sigma"))
-  expect_identical(
-    unname(as.matrix(res$draws)),
-    matrix(c(0, 0, 0, 0, 1, 1), nrow = 2)
-  )
-  expect_equal(res$diagnostics$n_obs, 3)
-  expect_equal(res$diagnostics$n_groups, 2)
-  expect_equal(res$diagnostics$n_covariates, 0)
-  expect_equal(res$diagnostics$n_censored, 1)
-  expect_equal(res$diagnostics$n_observed, 2)
-  expect_identical(res$priors, list(alpha = 1))
+  expect_true(is.matrix(res1$draws))
+  expect_identical(dim(res1$draws), c(4L, 3L))
+  expect_identical(colnames(res1$draws), c("theta_1", "theta_2", "sigma2"))
+  expect_true(all(is.finite(res1$draws)))
+  expect_true(all(res1$draws[, "sigma2"] > 0))
+  expect_identical(res1, res2)
+  expect_equal(res1$diagnostics$n_obs, 3)
+  expect_equal(res1$diagnostics$n_groups, 2)
+  expect_equal(res1$diagnostics$n_covariates, 0)
+  expect_equal(res1$diagnostics$n_censored, 1)
+  expect_equal(res1$diagnostics$n_observed, 2)
+  expect_identical(res1$priors, list(alpha = 1))
 })
 
 test_that("cpp_exnex_gibbs validates input edge cases", {

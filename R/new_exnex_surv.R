@@ -4,7 +4,7 @@
 #' from EXNEX model fitting.
 #'
 #' @param draws A data frame containing posterior samples.
-#'   Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma.
+#'   Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma2.
 #' @param data A list containing:
 #'   - time: Observed follow-up times
 #'   - event: Event indicators (0/1)
@@ -66,7 +66,7 @@ new_exnex_surv <- function(
     )
   }
 
-  expected_cols <- data$n_groups + data$n_covariates + 1 # K + P + sigma
+  expected_cols <- data$n_groups + data$n_covariates + 1 # K + P + sigma2
   if (ncol(draws) != expected_cols) {
     stop(
       "Number of columns in draws (",

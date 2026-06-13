@@ -3,14 +3,14 @@
 
 #' Main Gibbs Sampler for EXNEX Survival Models
 #'
-#' Implements MCMC sampling for Bayesian EXNEX model with right-censored
-#' log-normal survival data. Supports optional covariates.
+#' Implements Gibbs sampling for Bayesian EXNEX right-censored
+#' log-normal survival models with optional covariates.
 #'
 #' @param time Vector of observed follow-up times (n-vector, all > 0)
 #' @param event Vector of event indicators (n-vector, 0 or 1)
 #' @param group Vector of group assignments (n-vector, integers 1 to K)
-#' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates
-#' @param priors List with prior specifications
+#' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates.
+#' @param priors List with prior specifications. Currently accepted for API compatibility.
 #' @param iter Total number of MCMC iterations
 #' @param warmup Number of iterations to discard
 #' @param chains Number of independent chains to run
