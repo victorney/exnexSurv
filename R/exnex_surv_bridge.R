@@ -10,8 +10,10 @@
 #' @param iter Total number of MCMC iterations.
 #' @param warmup Number of warmup iterations.
 #' @param chains Number of chains to run.
+#' @param parallel_chains Number of chains to run in parallel at the R level.
 #' @param group_col Name of the original group column.
 #' @param original_data The original data frame (before hardhat processing).
+#' @param seed Optional seed used to deterministically derive one seed per chain.
 #'
 #' @return An `exnex_surv` object.
 #' @keywords internal
@@ -21,22 +23,16 @@ exnex_surv_bridge <- function(
   iter,
   warmup,
   chains,
+  parallel_chains,
   group_col,
-  original_data
+  original_data,
+  seed = NULL
 ) {
   predictors <- processed$predictors
   outcomes <- processed$outcomes
 
   # extract outcomes
   time_vec <- .extract_time_vector(outcomes)
-
-  if (chains != 1) {
-    stop(
-      "Multi-chain support is not implemented yet. Use chains = 1.",
-      call. = FALSE
-    )
-  }
-
   event_vec <- .extract_event_vector(outcomes)
 
   n <- length(time_vec)
@@ -135,23 +131,41 @@ exnex_surv_bridge <- function(
     n_covariates = n_covariates
   )
 
-  # run mcmc
-  cpp_out <- cpp_exnex_gibbs(
-    time = cpp_data$time,
-    event = cpp_data$event,
-    group = cpp_data$group,
-    X = cpp_data$X,
-    priors = priors,
-    iter = iter,
-    warmup = warmup,
-    chains = chains
-  )
+  chain_seeds <- .make_chain_seeds(chains = chains, seed = seed)
 
-  if (!is.data.frame(cpp_out$draws)) {
-    cpp_out$draws <- as.data.frame(cpp_out$draws)
+  chain_draws <- if (chains == 1 || parallel_chains == 1) {
+    lapply(
+      seq_len(chains),
+      function(chain_id) {
+        .run_single_chain_exnex(
+          cpp_data = cpp_data,
+          priors = priors,
+          iter = iter,
+          warmup = warmup,
+          seed = chain_seeds[chain_id]
+        )
+      }
+    )
+  } else {
+    .run_chains_parallel_exnex(
+      cpp_data = cpp_data,
+      priors = priors,
+      iter = iter,
+      warmup = warmup,
+      chains = chains,
+      parallel_chains = parallel_chains,
+      chain_seeds = chain_seeds
+    )
   }
 
-  checkmate::assert_data_frame(cpp_out$draws, min.rows = 1, min.cols = 1)
+  draws <- do.call(rbind, chain_draws)
+  rownames(draws) <- NULL
+
+  if (!is.data.frame(draws)) {
+    draws <- as.data.frame(draws)
+  }
+
+  checkmate::assert_data_frame(draws, min.rows = 1, min.cols = 1)
 
   # store metadata
   clean_data <- list(
@@ -162,11 +176,12 @@ exnex_surv_bridge <- function(
     n = n,
     n_groups = n_groups,
     n_covariates = n_covariates,
-    cov_names = cov_names
+    cov_names = cov_names,
+    chain_seeds = chain_seeds
   )
 
   new_exnex_surv(
-    draws = cpp_out$draws,
+    draws = draws,
     data = clean_data,
     priors = priors,
     iter = iter,
@@ -208,4 +223,100 @@ exnex_surv_bridge <- function(
       call. = FALSE
     )
   }
+}
+
+#' Derive one deterministic seed per chain
+#' @keywords internal
+.make_chain_seeds <- function(chains, seed = NULL) {
+  checkmate::assert_int(chains, lower = 1)
+  checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
+
+  if (!is.null(seed)) {
+    old_seed_exists <- exists(
+      ".Random.seed",
+      envir = .GlobalEnv,
+      inherits = FALSE
+    )
+    if (old_seed_exists) {
+      old_seed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+    }
+    on.exit(
+      {
+        if (old_seed_exists) {
+          assign(".Random.seed", old_seed, envir = .GlobalEnv)
+        } else if (
+          exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+        ) {
+          rm(".Random.seed", envir = .GlobalEnv)
+        }
+      },
+      add = TRUE
+    )
+
+    set.seed(seed)
+  }
+
+  sample.int(.Machine$integer.max, size = chains, replace = FALSE)
+}
+
+#' Run a single chain by calling the C++ kernel once
+#' @keywords internal
+.run_single_chain_exnex <- function(cpp_data, priors, iter, warmup, seed) {
+  set.seed(seed)
+
+  out <- cpp_exnex_gibbs(
+    time = cpp_data$time,
+    event = cpp_data$event,
+    group = cpp_data$group,
+    X = cpp_data$X,
+    priors = priors,
+    iter = iter,
+    warmup = warmup,
+    chains = 1L
+  )
+
+  as.data.frame(out$draws)
+}
+
+#' Run multiple chains in parallel via PSOCK workers
+#' @keywords internal
+.run_chains_parallel_exnex <- function(
+  cpp_data,
+  priors,
+  iter,
+  warmup,
+  chains,
+  parallel_chains,
+  chain_seeds
+) {
+  workers <- min(parallel_chains, chains)
+  cl <- parallel::makeCluster(workers)
+  on.exit(parallel::stopCluster(cl), add = TRUE)
+
+  parallel::parLapply(
+    cl,
+    X = seq_len(chains),
+    fun = function(chain_id, cpp_data, priors, iter, warmup, chain_seeds) {
+      set.seed(chain_seeds[chain_id])
+
+      fit_cpp <- getFromNamespace("cpp_exnex_gibbs", ns = "exnexSurv")
+      fit <- fit_cpp(
+        time = cpp_data$time,
+        event = cpp_data$event,
+        group = cpp_data$group,
+        X = cpp_data$X,
+        priors = priors,
+        iter = iter,
+        warmup = warmup,
+        chains = 1L
+      )
+
+      as.data.frame(fit$draws)
+    },
+    cpp_data = cpp_data,
+    priors = priors,
+    iter = iter,
+    warmup = warmup,
+    chain_seeds = chain_seeds
+  )
 }

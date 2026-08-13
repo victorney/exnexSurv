@@ -10,8 +10,10 @@ exnex_surv_bridge(
   iter,
   warmup,
   chains,
+  parallel_chains,
   group_col,
-  original_data
+  original_data,
+  seed = NULL
 )
 }
 \arguments{
@@ -25,9 +27,13 @@ exnex_surv_bridge(
 
 \item{chains}{Number of chains to run.}
 
+\item{parallel_chains}{Number of chains to run in parallel at the R level.}
+
 \item{group_col}{Name of the original group column.}
 
 \item{original_data}{The original data frame (before hardhat processing).}
+
+\item{seed}{Optional seed used to deterministically derive one seed per chain.}
 }
 \value{
 An `exnex_surv` object.

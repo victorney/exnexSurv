@@ -203,6 +203,18 @@ test_that("exnex_surv validates public API edge cases", {
     "`warmup` (4) must be less than `iter` (4)."
   )
 
+  fit_multichain <- exnex_surv(
+    survival::Surv(time, event) ~ group,
+    data = trial_data,
+    priors = list(),
+    iter = 4,
+    warmup = 2,
+    chains = 2,
+    seed = 2719
+  )
+
+  expect_identical(dim(fit_multichain$draws), c(4L, 3L)) 
+
   expect_error_message(
     exnex_surv(
       survival::Surv(time, event) ~ group,
@@ -210,9 +222,10 @@ test_that("exnex_surv validates public API edge cases", {
       priors = list(),
       iter = 4,
       warmup = 2,
-      chains = 2
+      chains = 2,
+      parallel_chains = 3
     ),
-    "Multi-chain support is not implemented yet. Use chains = 1."
+    "`parallel_chains` (3) must be less than or equal to `chains` (2)."
   )
 
   expect_error_message(
@@ -237,4 +250,32 @@ test_that("exnex_surv validates public API edge cases", {
     ),
     "`y` must be a Surv object, data frame, or matrix."
   )
+})
+
+test_that("exnex_surv supports parallel chain execution", {
+  fit_seq <- exnex_surv(
+    survival::Surv(time, event) ~ group + age,
+    data = trial_data,
+    priors = list(alpha = 1),
+    iter = 8,
+    warmup = 3,
+    chains = 2,
+    parallel_chains = 1,
+    seed = 2719
+  )
+
+  fit_parallel <- exnex_surv(
+    survival::Surv(time, event) ~ group + age,
+    data = trial_data,
+    priors = list(alpha = 1),
+    iter = 8,
+    warmup = 3,
+    chains = 2,
+    parallel_chains = 2,
+    seed = 2719
+  )
+
+  expect_identical(dim(fit_seq$draws), c(10L, 4L))
+  expect_identical(fit_seq$draws, fit_parallel$draws)
+  expect_identical(fit_seq$data$chain_seeds, fit_parallel$data$chain_seeds)
 })

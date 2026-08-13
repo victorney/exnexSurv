@@ -53,7 +53,7 @@ new_exnex_surv <- function(
   checkmate::assert_int(data$n_groups, lower = 1)
   checkmate::assert_int(data$n_covariates, lower = 0)
 
-  expected_rows <- iter - warmup
+  expected_rows <- (iter - warmup) * chains
   if (nrow(draws) != expected_rows) {
     stop(
       "Number of draw rows (",

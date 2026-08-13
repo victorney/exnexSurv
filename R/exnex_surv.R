@@ -44,6 +44,8 @@ exnex_surv.default <- function(x, ...) {
 #' @param warmup Number of warmup iterations to discard. Default is 1000.
 #'   Posterior samples will have (iter - warmup) rows.
 #' @param chains Number of independent MCMC chains. Default is 1.
+#' @param parallel_chains Number of chains to run in parallel at the R level.
+#'   Must be between 1 and `chains`. Default is 1 (sequential chain execution).
 #' @param group_col Name of the column that represents the basket/group assignment.
 #'   This variable will be treated as the group index, separate from covariates.
 #'   If NULL (default), assumes the first RHS variable in the formula is the group.
@@ -58,6 +60,7 @@ exnex_surv.formula <- function(
   iter = 2000,
   warmup = 1000,
   chains = 1,
+  parallel_chains = 1,
   group_col = NULL,
   seed = NULL,
   ...
@@ -68,8 +71,16 @@ exnex_surv.formula <- function(
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
-  if (chains != 1) {
-    stop("Multi-chain support is not implemented yet. Use chains = 1.", call. = FALSE)
+  checkmate::assert_int(parallel_chains, lower = 1)
+  if (parallel_chains > chains) {
+    stop(
+      "`parallel_chains` (",
+      parallel_chains,
+      ") must be less than or equal to `chains` (",
+      chains,
+      ").",
+      call. = FALSE
+    )
   }
   checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
   checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
@@ -112,9 +123,6 @@ exnex_surv.formula <- function(
       )
     }
   }
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
 
   processed <- hardhat::mold(formula, data)
 
@@ -124,13 +132,17 @@ exnex_surv.formula <- function(
     iter = iter,
     warmup = warmup,
     chains = chains,
+    parallel_chains = parallel_chains,
     group_col = group_col,
-    original_data = data
+    original_data = data,
+    seed = seed
   )
 }
 
 #' @param y A Surv object or matrix containing outcome (time and event status).
 #' @param chains Number of independent MCMC chains. Default is 1.
+#' @param parallel_chains Number of chains to run in parallel at the R level.
+#'   Must be between 1 and `chains`. Default is 1 (sequential chain execution).
 #' @param group_col Name of the column in `x` that represents the basket/group assignment.
 #'   If NULL (default), assumes the first column in x is the group.
 #' @param seed Random seed for reproducibility (optional).
@@ -144,6 +156,7 @@ exnex_surv.data.frame <- function(
   iter = 2000,
   warmup = 1000,
   chains = 1,
+  parallel_chains = 1,
   group_col = NULL,
   seed = NULL,
   ...
@@ -164,8 +177,16 @@ exnex_surv.data.frame <- function(
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
-  if (chains != 1) {
-    stop("Multi-chain support is not implemented yet. Use chains = 1.", call. = FALSE)
+  checkmate::assert_int(parallel_chains, lower = 1)
+  if (parallel_chains > chains) {
+    stop(
+      "`parallel_chains` (",
+      parallel_chains,
+      ") must be less than or equal to `chains` (",
+      chains,
+      ").",
+      call. = FALSE
+    )
   }
   checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
   checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
@@ -207,10 +228,6 @@ exnex_surv.data.frame <- function(
     group_col <- colnames(x)[1]
   }
 
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-
   original_x <- x
 
   if (inherits(y, "Surv") || is.matrix(y)) {
@@ -230,7 +247,9 @@ exnex_surv.data.frame <- function(
     iter = iter,
     warmup = warmup,
     chains = chains,
+    parallel_chains = parallel_chains,
     group_col = group_col,
-    original_data = original_x
+    original_data = original_x,
+    seed = seed
   )
 }

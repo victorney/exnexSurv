@@ -16,7 +16,13 @@ Imports:
   checkmate (>= 2.1.0)
 Suggests:
   testthat (>= 3.3.0),
-  survival (>= 3.8)
+  survival (>= 3.8),
+  knitr,
+  rmarkdown,
+  ggplot2,
+  bayesplot,
+  viridisLite
+VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
 Config/roxygen2/version: 8.0.0

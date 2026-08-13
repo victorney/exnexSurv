@@ -18,6 +18,7 @@ exnex_surv(x, ...)
   iter = 2000,
   warmup = 1000,
   chains = 1,
+  parallel_chains = 1,
   group_col = NULL,
   seed = NULL,
   ...
@@ -30,6 +31,7 @@ exnex_surv(x, ...)
   iter = 2000,
   warmup = 1000,
   chains = 1,
+  parallel_chains = 1,
   group_col = NULL,
   seed = NULL,
   ...
@@ -55,8 +57,12 @@ Posterior samples will have (iter - warmup) rows.}
 
 \item{chains}{Number of independent MCMC chains. Default is 1.}
 
-\item{group_col}{Name of the column in `x` that represents the basket/group assignment.
-If NULL (default), assumes the first column in x is the group.}
+\item{parallel_chains}{Number of chains to run in parallel at the R level.
+Must be between 1 and `chains`. Default is 1 (sequential chain execution).}
+
+\item{group_col}{Name of the column that represents the basket/group assignment.
+This variable will be treated as the group index, separate from covariates.
+If NULL (default), assumes the first RHS variable in the formula is the group.}
 
 \item{seed}{Random seed for reproducibility (optional).}
 
