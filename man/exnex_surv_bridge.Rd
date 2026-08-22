@@ -19,7 +19,8 @@ exnex_surv_bridge(
 \arguments{
 \item{processed}{A list produced by `hardhat::mold()`.}
 
-\item{priors}{A list of hyperparameters (currently placeholder).}
+\item{priors}{Optional named list of prior hyperparameters; see
+\code{exnex_surv()}.}
 
 \item{iter}{Total number of MCMC iterations.}
 

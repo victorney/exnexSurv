@@ -6,7 +6,8 @@
 #' data. Additional variables are treated as covariates in the linear predictor.
 #'
 #' @param processed A list produced by `hardhat::mold()`.
-#' @param priors A list of hyperparameters (currently placeholder).
+#' @param priors Optional named list of prior hyperparameters; see
+#'   \code{exnex_surv()}.
 #' @param iter Total number of MCMC iterations.
 #' @param warmup Number of warmup iterations.
 #' @param chains Number of chains to run.
@@ -133,7 +134,7 @@ exnex_surv_bridge <- function(
 
   chain_seeds <- .make_chain_seeds(chains = chains, seed = seed)
 
-  chain_draws <- if (chains == 1 || parallel_chains == 1) {
+  chain_runs <- if (chains == 1 || parallel_chains == 1) {
     lapply(
       seq_len(chains),
       function(chain_id) {
@@ -157,6 +158,9 @@ exnex_surv_bridge <- function(
       chain_seeds = chain_seeds
     )
   }
+
+  chain_draws <- lapply(chain_runs, function(x) x$draws)
+  chain_diagnostics <- lapply(chain_runs, function(x) x$diagnostics)
 
   draws <- do.call(rbind, chain_draws)
   rownames(draws) <- NULL
@@ -184,6 +188,7 @@ exnex_surv_bridge <- function(
     draws = draws,
     data = clean_data,
     priors = priors,
+    resolved_priors = chain_diagnostics[[1L]]$resolved_priors,
     iter = iter,
     warmup = warmup,
     chains = chains,
@@ -275,7 +280,10 @@ exnex_surv_bridge <- function(
     chains = 1L
   )
 
-  as.data.frame(out$draws)
+  list(
+    draws = as.data.frame(out$draws),
+    diagnostics = out$diagnostics
+  )
 }
 
 #' Run multiple chains in parallel via PSOCK workers
@@ -299,7 +307,7 @@ exnex_surv_bridge <- function(
     fun = function(chain_id, cpp_data, priors, iter, warmup, chain_seeds) {
       set.seed(chain_seeds[chain_id])
 
-      fit_cpp <- getFromNamespace("cpp_exnex_gibbs", ns = "exnexSurv")
+      fit_cpp <- utils::getFromNamespace("cpp_exnex_gibbs", ns = "exnexSurv")
       fit <- fit_cpp(
         time = cpp_data$time,
         event = cpp_data$event,
@@ -311,7 +319,10 @@ exnex_surv_bridge <- function(
         chains = 1L
       )
 
-      as.data.frame(fit$draws)
+      list(
+        draws = as.data.frame(fit$draws),
+        diagnostics = fit$diagnostics
+      )
     },
     cpp_data = cpp_data,
     priors = priors,

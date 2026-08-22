@@ -13,9 +13,19 @@ cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
 
 \item{group}{Vector of group assignments (n-vector, integers 1 to K)}
 
-\item{X}{Matrix of covariates (n x P). Can be empty (n x 0) if no covariates}
+\item{X}{Matrix of covariates (n x P). Can be empty (n x 0) if no covariates.}
 
-\item{priors}{List with prior specifications}
+\item{priors}{Optional named list of prior hyperparameters. Supported
+fields: \code{a_sigma}, \code{b_sigma}, \code{a_tau}, \code{b_tau}
+(inverse-Gamma shape and scale), \code{p_mix} (EXNEX mixture weight),
+\code{m_mu}, \code{v_mu} (exchangeable mean prior), \code{m_nex},
+\code{v_nex} (nonexchangeable component), \code{v_beta} (variance of the
+regression-coefficient prior). \code{p_mix}, \code{m_nex}, and
+\code{v_nex} each accept either a scalar, replicated across baskets, or a
+numeric vector of length K with one value per basket, matching the
+basket-specific notation \eqn{p_{\mathrm{exch},j}}, \eqn{m_{0j}},
+\eqn{v_{0j}} of the model. Absent fields keep the defaults; unknown
+fields are ignored.}
 
 \item{iter}{Total number of MCMC iterations}
 
@@ -27,7 +37,7 @@ cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
 List containing posterior draws, priors, metadata, and diagnostics
 }
 \description{
-Implements MCMC sampling for Bayesian EXNEX model with right-censored
-log-normal survival data. Supports optional covariates.
+Implements Gibbs sampling for Bayesian EXNEX right-censored
+log-normal survival models with optional covariates.
 }
 \keyword{internal}

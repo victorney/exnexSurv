@@ -101,7 +101,7 @@ This fit stores all post-warmup draws in one table. With `chains = 2`, each chai
 ## Traceplots
 
 ```{r}
-exnexSurv:::plot.exnex_surv(fit, ask = FALSE)
+plot(fit, ask = FALSE)
 ```
 
 A healthy traceplot usually shows noisy fluctuations around a roughly stable level rather than long drifts or very sticky behavior.

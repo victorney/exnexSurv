@@ -87,7 +87,17 @@ arma::vec draw_normal_from_precision(const arma::mat& precision, const arma::vec
 //' @param event Vector of event indicators (n-vector, 0 or 1)
 //' @param group Vector of group assignments (n-vector, integers 1 to K)
 //' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates.
-//' @param priors List with prior specifications. Currently accepted for API compatibility.
+//' @param priors Optional named list of prior hyperparameters. Supported
+//'   fields: \code{a_sigma}, \code{b_sigma}, \code{a_tau}, \code{b_tau}
+//'   (inverse-Gamma shape and scale), \code{p_mix} (EXNEX mixture weight),
+//'   \code{m_mu}, \code{v_mu} (exchangeable mean prior), \code{m_nex},
+//'   \code{v_nex} (nonexchangeable component), \code{v_beta} (variance of the
+//'   regression-coefficient prior). \code{p_mix}, \code{m_nex}, and
+//'   \code{v_nex} each accept either a scalar, replicated across baskets, or a
+//'   numeric vector of length K with one value per basket, matching the
+//'   basket-specific notation \eqn{p_{\mathrm{exch},j}}, \eqn{m_{0j}},
+//'   \eqn{v_{0j}} of the model. Absent fields keep the defaults; unknown
+//'   fields are ignored.
 //' @param iter Total number of MCMC iterations
 //' @param warmup Number of iterations to discard
 //' @param chains Number of independent chains to run
@@ -112,6 +122,47 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
   double v_nex = 1e4;
   double v_beta = 1e4;
   double init_censor_offset = 0.1;
+
+  // Track whether the basket-specific priors were supplied as vectors so that
+  // the resolved-priors report preserves the user's input shape.
+  bool p_mix_vector = false;
+  bool m_nex_vector = false;
+  bool v_nex_vector = false;
+
+  // Read optional prior overrides from the R list. Absent fields keep the
+  // defaults above; unknown fields are ignored for backward compatibility.
+  auto read_prior = [](const Rcpp::List& priors, const char* name,
+                       double default_value) {
+    if (!priors.containsElementNamed(name)) {
+      return default_value;
+    }
+    SEXP element = priors[name];
+    if (Rf_isNull(element) || !Rf_isNumeric(element) || Rf_length(element) != 1) {
+      Rcpp::stop(std::string("Prior '") + name + "' must be a single numeric value.");
+    }
+    double value = Rcpp::as<double>(element);
+    if (!std::isfinite(value)) {
+      Rcpp::stop(std::string("Prior '") + name + "' must be finite.");
+    }
+    return value;
+  };
+
+  a_sigma = read_prior(priors, "a_sigma", a_sigma);
+  b_sigma = read_prior(priors, "b_sigma", b_sigma);
+  a_tau = read_prior(priors, "a_tau", a_tau);
+  b_tau = read_prior(priors, "b_tau", b_tau);
+  // p_mix, m_nex and v_nex may be scalar or per-basket vectors; the scalar
+  // defaults are read below by read_prior_vec, which replicates them.
+  m_mu = read_prior(priors, "m_mu", m_mu);
+  v_mu = read_prior(priors, "v_mu", v_mu);
+  v_beta = read_prior(priors, "v_beta", v_beta);
+
+  if (a_sigma <= 0.0 || b_sigma <= 0.0 || a_tau <= 0.0 || b_tau <= 0.0) {
+    Rcpp::stop("Inverse-gamma prior parameters must be positive.");
+  }
+  if (v_mu <= 0.0 || v_beta <= 0.0) {
+    Rcpp::stop("Prior variances must be positive.");
+  }
 
   int n = time.n_elem;
 
@@ -174,6 +225,63 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
   int P = X.n_cols;
   int n_samples = iter - warmup;
   int n_cols_out = K + P + 1;
+
+  // Read basket-specific priors: a scalar is replicated across the K baskets;
+  // a numeric vector of length K assigns one value per basket. The scalars
+  // read above serve as defaults and as the replicated value.
+  auto read_prior_vec = [&](const char* name, double default_value,
+                            bool& was_vector) {
+    arma::vec out(K);
+    if (!priors.containsElementNamed(name)) {
+      out.fill(default_value);
+      return out;
+    }
+    SEXP element = priors[name];
+    if (Rf_isNull(element) || !Rf_isNumeric(element)) {
+      Rcpp::stop(std::string("Prior '") + name +
+                 "' must be a single numeric value or a numeric vector of "
+                 "length K (one value per basket).");
+    }
+    if (Rf_length(element) == 1) {
+      double value = Rcpp::as<double>(element);
+      if (!std::isfinite(value)) {
+        Rcpp::stop(std::string("Prior '") + name + "' must be finite.");
+      }
+      out.fill(value);
+      return out;
+    }
+    if (Rf_length(element) == K) {
+      out = Rcpp::as<arma::vec>(element);
+      if (!out.is_finite()) {
+        Rcpp::stop(std::string("Prior '") + name + "' must be finite.");
+      }
+      was_vector = true;
+      return out;
+    }
+    Rcpp::stop(std::string("Prior '") + name + "' must be a single numeric "
+               "value or a numeric vector of length K = " +
+               std::to_string(K) + "; got length " +
+               std::to_string(Rf_length(element)) + ".");
+    return out;
+  };
+
+  arma::vec p_mix_vec = read_prior_vec("p_mix", p_mix, p_mix_vector);
+  arma::vec m_nex_vec = read_prior_vec("m_nex", m_nex, m_nex_vector);
+  arma::vec v_nex_vec = read_prior_vec("v_nex", v_nex, v_nex_vector);
+
+  // Keep the scalar mirrors in sync so that the resolved-priors report
+  // reflects scalar input; vector input is reported as a vector.
+  if (!p_mix_vector) p_mix = p_mix_vec(0);
+  if (!m_nex_vector) m_nex = m_nex_vec(0);
+  if (!v_nex_vector) v_nex = v_nex_vec(0);
+
+  if (arma::any(p_mix_vec <= 0.0) || arma::any(p_mix_vec >= 1.0)) {
+    Rcpp::stop("Prior mixture weight 'p_mix' must lie strictly between 0 and 1 "
+               "for every basket.");
+  }
+  if (arma::any(v_nex_vec <= 0.0)) {
+    Rcpp::stop("Prior variance 'v_nex' must be positive for every basket.");
+  }
 
   arma::vec log_time = arma::log(time);
   arma::uvec group_index = arma::conv_to<arma::uvec>::from(group - 1.0);
@@ -267,8 +375,8 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     arma::vec sum_R = group_map.t() * subgroup_resid;
 
     for (int j = 0; j < K; ++j) {
-      double prior_mean = m_nex;
-      double prior_var = v_nex;
+      double prior_mean = m_nex_vec(j);
+      double prior_var = v_nex_vec(j);
 
       if (z(j) == 1) {
         prior_mean = mu;
@@ -283,8 +391,8 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
 
     for (int j = 0; j < K; ++j) {
       // Compute EX/NEX weights on the log scale for stability.
-      double log_w1 = std::log(p_mix) + R::dnorm4(theta(j), mu, std::sqrt(tau2), 1);
-      double log_w0 = std::log1p(-p_mix) + R::dnorm4(theta(j), m_nex, std::sqrt(v_nex), 1);
+      double log_w1 = std::log(p_mix_vec(j)) + R::dnorm4(theta(j), mu, std::sqrt(tau2), 1);
+      double log_w0 = std::log1p(-p_mix_vec(j)) + R::dnorm4(theta(j), m_nex_vec(j), std::sqrt(v_nex_vec(j)), 1);
 
       double max_log = std::max(log_w1, log_w0);
       double w1 = std::exp(log_w1 - max_log);
@@ -339,12 +447,41 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
   col_names[col_idx] = "sigma2";
   Rcpp::colnames(draws_out) = col_names;
 
+  Rcpp::List resolved_priors = Rcpp::List::create(
+    Rcpp::Named("a_sigma") = a_sigma,
+    Rcpp::Named("b_sigma") = b_sigma,
+    Rcpp::Named("a_tau") = a_tau,
+    Rcpp::Named("b_tau") = b_tau,
+    Rcpp::Named("p_mix") = p_mix,
+    Rcpp::Named("m_mu") = m_mu,
+    Rcpp::Named("v_mu") = v_mu,
+    Rcpp::Named("m_nex") = m_nex,
+    Rcpp::Named("v_nex") = v_nex,
+    Rcpp::Named("v_beta") = v_beta
+  );
+
+  // Report basket-specific vector priors in their full form when supplied.
+  // (arma::vec wraps with a dim attribute; rebuild as a plain R vector.)
+  if (p_mix_vector) {
+    Rcpp::NumericVector pv(p_mix_vec.begin(), p_mix_vec.end());
+    resolved_priors["p_mix"] = pv;
+  }
+  if (m_nex_vector) {
+    Rcpp::NumericVector nv(m_nex_vec.begin(), m_nex_vec.end());
+    resolved_priors["m_nex"] = nv;
+  }
+  if (v_nex_vector) {
+    Rcpp::NumericVector vv(v_nex_vec.begin(), v_nex_vec.end());
+    resolved_priors["v_nex"] = vv;
+  }
+
   Rcpp::List diagnostics = Rcpp::List::create(
     Rcpp::Named("n_obs") = n,
     Rcpp::Named("n_groups") = K,
     Rcpp::Named("n_covariates") = P,
     Rcpp::Named("n_censored") = arma::sum(1 - event),
-    Rcpp::Named("n_observed") = arma::sum(event)
+    Rcpp::Named("n_observed") = arma::sum(event),
+    Rcpp::Named("resolved_priors") = resolved_priors
   );
 
   return Rcpp::List::create(

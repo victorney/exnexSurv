@@ -170,20 +170,26 @@ print.exnex_surv <- function(
   )
 
   if (show_trace) {
-    if (is.null(parameters)) {
-      parameters <- colnames(x$draws)
-    }
-
-    n_to_plot <- if (is.infinite(max_parameters)) {
-      length(parameters)
+    if (!requireNamespace("bayesplot", quietly = TRUE)) {
+      cat(
+        "\nTraceplots skipped: package 'bayesplot' is not installed.\n"
+      )
     } else {
-      min(length(parameters), as.integer(max_parameters))
+      if (is.null(parameters)) {
+        parameters <- colnames(x$draws)
+      }
+
+      n_to_plot <- if (is.infinite(max_parameters)) {
+        length(parameters)
+      } else {
+        min(length(parameters), as.integer(max_parameters))
+      }
+
+      parameters <- parameters[seq_len(n_to_plot)]
+
+      cat("\nTraceplots (one parameter per panel):\n")
+      plot(x, parameters = parameters, ask = interactive())
     }
-
-    parameters <- parameters[seq_len(n_to_plot)]
-
-    cat("\nTraceplots (one parameter per panel):\n")
-    plot(x, parameters = parameters, ask = interactive())
   }
 
   invisible(x)

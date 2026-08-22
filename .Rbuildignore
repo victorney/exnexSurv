@@ -1,8 +1,12 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^\.posit$
 ^\.positai$
 ^\.claude$
 ^LICENSE\.md$
 ^\.github$
 ^doc$
+^docs$
 ^Meta$
+^\.Rhistory$
+^plan\.md$

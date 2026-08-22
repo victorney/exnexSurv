@@ -15,6 +15,8 @@
 #'   - n_covariates: Number of covariates
 #'   - cov_names: Covariate column names
 #' @param priors A list of prior specifications used for fitting.
+#' @param resolved_priors A named list of the prior hyperparameters actually
+#'   used (defaults merged with any overrides supplied in \code{priors}).
 #' @param iter Total MCMC iterations performed.
 #' @param warmup Number of warmup iterations discarded.
 #' @param chains Number of chains run.
@@ -26,6 +28,7 @@ new_exnex_surv <- function(
   draws,
   data,
   priors,
+  resolved_priors = priors,
   iter,
   warmup,
   chains,
@@ -34,6 +37,7 @@ new_exnex_surv <- function(
   checkmate::assert_data_frame(draws, min.rows = 1, min.cols = 1)
   checkmate::assert_list(data, min.len = 1)
   checkmate::assert_list(priors)
+  checkmate::assert_list(resolved_priors)
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
@@ -83,6 +87,7 @@ new_exnex_surv <- function(
     draws = draws,
     data = data,
     priors = priors,
+    resolved_priors = resolved_priors,
     iter = iter,
     warmup = warmup,
     chains = chains,
