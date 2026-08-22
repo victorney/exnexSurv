@@ -10,7 +10,7 @@ Description: Implements the Bayesian Exchangeable Non-Exchangeable (EXNEX)
   sampler supporting EXNEX, complete pooling, and no pooling models to 
   facilitate methodological comparisons and simulation studies.
 License: MIT + file LICENSE
-URL: https://github.com/victorney/exnexSurv
+URL: https://github.com/victorney/exnexSurv, https://victorney.github.io/exnexSurv/
 BugReports: https://github.com/victorney/exnexSurv/issues
 Imports:
   Rcpp (>= 1.1.1),

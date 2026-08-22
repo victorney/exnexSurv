@@ -10,3 +10,5 @@
 ^Meta$
 ^\.Rhistory$
 ^plan\.md$
+^_pkgdown\.yml$
+^pkgdown$

@@ -13,8 +13,8 @@ Each basket's log-location effect is either drawn from a shared exchangeable com
 selected by a latent indicator. Censored event times are imputed from their
 truncated-Normal conditional distribution, which makes every full conditional conjugate and
 the systematic Gibbs scan exact. The sampler is implemented in C++/RcppArmadillo and is
-roughly 25&times; faster than a marginalized Stan implementation of the same model on the
-companion paper's simulation study.
+roughly 25&times; faster than a marginalized Stan implementation of the same model on the 
+paper's simulation study.
 
 ## Installation
 
@@ -55,21 +55,3 @@ fit <- exnex_surv(
 
 summary(fit)
 ```
-
-## Documentation
-
-* **Vignettes** (built with `browseVignettes("exnexSurv")`):
-  * [The EXNEX Model, Priors, and Data Augmentation](vignettes/model-and-methods.Rmd) — the model, the priors and how to customize them, the data augmentation mechanism, the Gibbs sampler, and a worked example.
-  * [Getting Started](vignettes/getting-started.Rmd) — installing, fitting, and inspecting fits.
-  * [Convergence and Diagnostics](vignettes/convergence-and-diagnostics.Rmd) — practical MCMC stability checks.
-  * [Running Chains in Parallel](vignettes/parallel-chains.Rmd) — multiple chains and R-level parallelism.
-
-## Methodology
-
-The statistical methodology is described in:
-
-> Ney, V. (2026). *Bayesian EXNEX survival models with data augmentation for basket
-> trials.* Manuscript.
-
-The model extends the robust exchangeability design of Neuenschwander et al. (2016),
-*Pharmaceutical Statistics*, 15(2), 123–134.
