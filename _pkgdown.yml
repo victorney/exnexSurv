@@ -14,7 +14,7 @@ home:
 
 navbar:
   structure:
-    left: [home, intro, reference, articles, news]
+    left: [home, intro, reference, articles]
     right: [github, lightswitch]
   components:
     home: ~
@@ -27,6 +27,17 @@ reference:
     desc: "Fit an EXNEX survival model to right-censored data."
     contents:
       - exnex_surv
+  - title: "Inference and model selection"
+    desc: "Posterior summaries, survival curves, model comparison and simulation."
+    contents:
+      - survival_curves
+      - plot.survival_exnex
+      - median_survival
+      - rmst
+      - compute_waic
+      - compare_waic
+      - probability_superiority
+      - simulate_data
   - title: "Methods for fitted objects"
     desc: "Summarise, print, and plot fitted `exnex_surv` objects."
     contents:
@@ -58,12 +69,8 @@ articles:
       - model-and-methods
   - title: "Practical guides"
     navbar: "Practical guides"
-    desc: "MCMC stability checks and running chains in parallel."
+    desc: "MCMC stability checks, running chains in parallel, and inference tools."
     contents:
       - convergence-and-diagnostics
       - parallel-chains
-
-news:
-  releases:
-    - text: "Version 1.2.0"
-      href: https://github.com/victorney/exnexSurv/releases/tag/v1.2.0
+      - tools-for-experimenters

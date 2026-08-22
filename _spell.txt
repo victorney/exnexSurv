@@ -1,0 +1,15 @@
+dt
+elpd
+ggplot
+lpd
+newdata
+rmst
+RMST
+se
+summ
+summarised
+summarises
+tmax
+waic
+WAIC
+Watanabe
