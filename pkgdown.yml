@@ -1,0 +1,12 @@
+pandoc: 3.8.3
+pkgdown: 2.2.1
+pkgdown_sha: ~
+articles:
+  convergence-and-diagnostics: convergence-and-diagnostics.html
+  getting-started: getting-started.html
+  model-and-methods: model-and-methods.html
+  parallel-chains: parallel-chains.html
+last_built: 2026-08-22T18:08Z
+urls:
+  reference: https://victorney.github.io/exnexSurv/reference
+  article: https://victorney.github.io/exnexSurv/articles
