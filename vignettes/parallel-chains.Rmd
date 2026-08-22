@@ -1,0 +1,150 @@
+---
+title: "Running Chains in Parallel"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Running Chains in Parallel}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Overview
+
+`exnexSurv` can run multiple independent MCMC chains and, when requested, distribute them across R-level parallel workers.
+The C++ sampler still handles one chain per call; the R bridge coordinates the chain loop and combines the post-warmup draws.
+
+Use:
+
+- `chains` for the total number of independent chains,
+- `parallel_chains` for how many chains to run concurrently.
+
+`parallel_chains` must be less than or equal to `chains`.
+
+## Simulate data
+
+```{r}
+library(exnexSurv)
+library(survival)
+
+simulate_surv_data <- function(
+  theta,
+  sigma2,
+  beta = NULL,
+  n_per_group = 40,
+  censor_min = 4,
+  censor_max = 12,
+  seed = NULL
+) {
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  groups <- rep(seq_along(theta), each = n_per_group)
+  age_std <- rnorm(length(groups))
+  mean_log_time <- rep(theta, each = n_per_group)
+
+  if (!is.null(beta)) {
+    mean_log_time <- mean_log_time + beta * age_std
+  }
+
+  log_time <- rnorm(length(groups), mean = mean_log_time, sd = sqrt(sigma2))
+  true_time <- exp(log_time)
+  censor_time <- runif(length(groups), min = censor_min, max = censor_max)
+
+  data.frame(
+    time = pmin(true_time, censor_time),
+    event = as.integer(true_time <= censor_time),
+    group = factor(groups),
+    age_std = age_std
+  )
+}
+
+sim_data <- simulate_surv_data(
+  theta = c(1.0, 1.6, 2.1),
+  sigma2 = 0.25,
+  beta = -0.30,
+  seed = 9201
+)
+```
+
+## Fit two chains in parallel
+
+```{r}
+fit_parallel <- exnex_surv(
+  Surv(time, event) ~ group + age_std,
+  data = sim_data,
+  iter = 60,
+  warmup = 20,
+  chains = 2,
+  parallel_chains = 2,
+  seed = 9201
+)
+
+print(fit_parallel, show_trace = FALSE)
+```
+
+The fitted object stores the combined post-warmup draws from both chains.
+If you used `iter = 60` and `warmup = 20` with `chains = 2`, the posterior sample table contains `80` rows in total, or `40` rows per chain.
+
+## Fit more chains than workers
+
+```{r}
+fit_four_chains <- exnex_surv(
+  Surv(time, event) ~ group + age_std,
+  data = sim_data,
+  iter = 60,
+  warmup = 20,
+  chains = 4,
+  parallel_chains = 2,
+  seed = 9201
+)
+
+print(fit_four_chains, show_trace = FALSE)
+```
+
+This runs four independent chains while scheduling only two workers at a time.
+
+## Traceplots with all chains
+
+```{r}
+plot(
+  fit_parallel,
+  parameters = c("theta_1", "theta_2", "theta_3", "beta_1", "sigma2"),
+  ask = FALSE
+)
+```
+
+Each parameter panel shows all chains together, which makes it easier to compare mixing and overlap across chains.
+
+## Compare to sequential execution
+
+```{r}
+fit_sequential <- exnex_surv(
+  Surv(time, event) ~ group + age_std,
+  data = sim_data,
+  iter = 60,
+  warmup = 20,
+  chains = 2,
+  parallel_chains = 1,
+  seed = 9201
+)
+
+identical(fit_parallel$draws, fit_sequential$draws)
+```
+
+Changing `parallel_chains` affects only how the chains are scheduled, not the model itself.
+
+## Practical notes
+
+If you want to run more chains than you want to evaluate concurrently, set `parallel_chains` smaller than `chains`.
+That is useful when the sampler is expensive or when you want to avoid using all available cores at once.

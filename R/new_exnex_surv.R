@@ -4,7 +4,7 @@
 #' from EXNEX model fitting.
 #'
 #' @param draws A data frame containing posterior samples.
-#'   Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma.
+#'   Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma2.
 #' @param data A list containing:
 #'   - time: Observed follow-up times
 #'   - event: Event indicators (0/1)
@@ -15,6 +15,8 @@
 #'   - n_covariates: Number of covariates
 #'   - cov_names: Covariate column names
 #' @param priors A list of prior specifications used for fitting.
+#' @param resolved_priors A named list of the prior hyperparameters actually
+#'   used (defaults merged with any overrides supplied in \code{priors}).
 #' @param iter Total MCMC iterations performed.
 #' @param warmup Number of warmup iterations discarded.
 #' @param chains Number of chains run.
@@ -26,6 +28,7 @@ new_exnex_surv <- function(
   draws,
   data,
   priors,
+  resolved_priors = priors,
   iter,
   warmup,
   chains,
@@ -34,6 +37,7 @@ new_exnex_surv <- function(
   checkmate::assert_data_frame(draws, min.rows = 1, min.cols = 1)
   checkmate::assert_list(data, min.len = 1)
   checkmate::assert_list(priors)
+  checkmate::assert_list(resolved_priors)
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
@@ -53,7 +57,7 @@ new_exnex_surv <- function(
   checkmate::assert_int(data$n_groups, lower = 1)
   checkmate::assert_int(data$n_covariates, lower = 0)
 
-  expected_rows <- iter - warmup
+  expected_rows <- (iter - warmup) * chains
   if (nrow(draws) != expected_rows) {
     stop(
       "Number of draw rows (",
@@ -66,7 +70,7 @@ new_exnex_surv <- function(
     )
   }
 
-  expected_cols <- data$n_groups + data$n_covariates + 1 # K + P + sigma
+  expected_cols <- data$n_groups + data$n_covariates + 1 # K + P + sigma2
   if (ncol(draws) != expected_cols) {
     stop(
       "Number of columns in draws (",
@@ -83,6 +87,7 @@ new_exnex_surv <- function(
     draws = draws,
     data = data,
     priors = priors,
+    resolved_priors = resolved_priors,
     iter = iter,
     warmup = warmup,
     chains = chains,

@@ -18,6 +18,7 @@ exnex_surv(x, ...)
   iter = 2000,
   warmup = 1000,
   chains = 1,
+  parallel_chains = 1,
   group_col = NULL,
   seed = NULL,
   ...
@@ -30,6 +31,7 @@ exnex_surv(x, ...)
   iter = 2000,
   warmup = 1000,
   chains = 1,
+  parallel_chains = 1,
   group_col = NULL,
   seed = NULL,
   ...
@@ -46,7 +48,21 @@ The first RHS variable is the group/basket assignment. Additional variables are 
 
 \item{data}{A data frame containing the variables in the formula.}
 
-\item{priors}{A list of hyperparameters. Currently a placeholder.}
+\item{priors}{Optional named list of prior hyperparameters. Supported fields:
+\code{a_sigma}, \code{b_sigma}, \code{a_tau}, \code{b_tau}
+(inverse-Gamma shape and scale for the residual variance \eqn{\sigma^2} and
+the between-basket variance \eqn{\tau^2}); \code{p_mix} (EXNEX mixture
+weight, strictly between 0 and 1); \code{m_mu}, \code{v_mu} (prior mean and
+variance of the exchangeable center \eqn{\mu}); \code{m_nex}, \code{v_nex}
+(prior mean and variance of the nonexchangeable component); \code{v_beta}
+(variance of the regression-coefficient prior). \code{p_mix}, \code{m_nex},
+and \code{v_nex} each accept either a scalar, replicated across baskets, or
+a numeric vector of length K with one value per basket, matching the
+basket-specific notation of the model. All other fields are scalars. Absent
+fields keep the defaults
+(inverse-Gamma(2,2) for the variances, \code{p_mix = 0.5},
+\code{m_mu = 0}, \code{v_mu = 1e4}, \code{m_nex = 0}, \code{v_nex = 1e4},
+\code{v_beta = 1e4}); unknown fields are ignored.}
 
 \item{iter}{Total number of MCMC iterations. Default is 2000.}
 
@@ -54,6 +70,9 @@ The first RHS variable is the group/basket assignment. Additional variables are 
 Posterior samples will have (iter - warmup) rows.}
 
 \item{chains}{Number of independent MCMC chains. Default is 1.}
+
+\item{parallel_chains}{Number of chains to run in parallel at the R level.
+Must be between 1 and `chains`. Default is 1 (sequential chain execution).}
 
 \item{group_col}{Name of the column in `x` that represents the basket/group assignment.
 If NULL (default), assumes the first column in x is the group.}
@@ -64,21 +83,64 @@ If NULL (default), assumes the first column in x is the group.}
 }
 \value{
 An object of class `exnex_surv` containing posterior samples and metadata.
+  Components include \code{draws} (a data frame with columns
+  \code{theta_1}, ..., \code{theta_K}, \code{beta_1}, ..., \code{beta_P}, and
+  \code{sigma2}), \code{data} (the processed data: \code{time}, \code{event},
+  \code{group}, \code{X}, \code{n}, \code{n_groups}, \code{n_covariates},
+  \code{cov_names}, \code{chain_seeds}), \code{priors} (the supplied priors),
+  \code{resolved_priors} (defaults merged with overrides), \code{iter},
+  \code{warmup}, \code{chains}, and \code{blueprint}. Use \code{summary()},
+  \code{print()}, and \code{plot()} to inspect it.
 }
 \description{
 Fits a Bayesian Exchangeable Non-Exchangeable (EXNEX) hierarchical model
-for right-censored survival data in basket trials.
+for right-censored log-normal survival data in basket trials using a
+data-augmented Gibbs sampler.
 }
 \details{
-The first predictor variable in the model formula is interpreted as the
-basket/group assignment. Additional variables are included as covariates
-in a linear predictor on the log-survival scale.
+For patient \eqn{i}, the model is
+\deqn{\log T_i = \theta_{g[i]} + X_i^{\mathsf T}\beta + \varepsilon_i,\quad
+\varepsilon_i\sim\mathcal N(0,\sigma^2),}
+with a latent EXNEX hierarchy on the basket effects,
+\deqn{\theta_j\mid Z_j\sim Z_j\,\mathcal N(\mu,\tau^2)
++(1-Z_j)\,\mathcal N(m_{0j},v_{0j}),\quad
+Z_j\sim\mathrm{Bern}(p_{\mathrm{exch},j}),}
+so that each basket either borrows strength from the exchangeable component
+\eqn{\mathcal N(\mu,\tau^2)} or follows its own non-exchangeable prior
+\eqn{\mathcal N(m_{0j},v_{0j})}. The first predictor variable in the model
+formula is interpreted as the basket/group assignment; additional variables
+are covariates in the linear predictor on the log-survival scale.
+
+Censored event times are handled by data augmentation: a censored log-time is
+imputed from its truncated-Normal conditional distribution (inverse-CDF in log
+space) before the remaining parameters are updated with their conjugate full
+conditionals. The sampler keeps only the posterior draws of \eqn{\theta_j},
+\eqn{\beta}, and \eqn{\sigma^2}.
 }
 \examples{
-# Fit model with group effects only
-# fit <- exnex_surv(Surv(time, event) ~ group, data = trial_data)
+# Small simulated dataset: three baskets, one covariate, ~25\% censoring
+set.seed(1)
+n <- 90
+group <- factor(rep(1:3, each = 30))
+x1 <- rnorm(n)
+eta <- rep(c(1.1, 1.6, 2.0), each = 30) + 0.5 * x1
+true_time <- exp(eta + rnorm(n, 0, 0.6))
+cens_time <- runif(n, 2, 9)
+d <- data.frame(
+  time = pmin(true_time, cens_time),
+  event = as.integer(true_time <= cens_time),
+  group = group,
+  x1 = x1
+)
 
-# Fit model with group + covariates
-# fit <- exnex_surv(Surv(time, event) ~ group + age + baseline, data = trial_data)
+# Fit with group effects and one covariate (small run for the example)
+fit <- exnex_surv(
+  survival::Surv(time, event) ~ group + x1,
+  data = d,
+  priors = list(p_mix = 0.7),
+  iter = 300, warmup = 150, chains = 1
+)
+print(fit, show_trace = FALSE)
+summary(fit)
 
 }

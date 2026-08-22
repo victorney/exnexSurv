@@ -1,0 +1,69 @@
+url: https://victorney.github.io/exnexSurv/
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  light-switch: true
+
+home:
+  title: "exnexSurv"
+  description: >-
+    Bayesian Exchangeable-Non-Exchangeable (EXNEX) survival models for
+    right-censored log-normal data in basket trials, fitted with a fast
+    data-augmented Gibbs sampler (Rcpp/RcppArmadillo).
+
+navbar:
+  structure:
+    left: [home, intro, reference, articles, news]
+    right: [github, lightswitch]
+  components:
+    home: ~
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/victorney/exnexSurv
+
+reference:
+  - title: "Fitting"
+    desc: "Fit an EXNEX survival model to right-censored data."
+    contents:
+      - exnex_surv
+  - title: "Methods for fitted objects"
+    desc: "Summarise, print, and plot fitted `exnex_surv` objects."
+    contents:
+      - summary.exnex_surv
+      - print.exnex_surv
+      - plot.exnex_surv
+  - title: "Internal functions"
+    desc: "These functions are internal and not exported; use with caution."
+    contents:
+      - cpp_exnex_gibbs
+      - exnex_surv_bridge
+      - new_exnex_surv
+      - .extract_event_vector
+      - .extract_time_vector
+      - .make_chain_seeds
+      - .run_chains_parallel_exnex
+      - .run_single_chain_exnex
+
+articles:
+  - title: "Start here"
+    navbar: "Start here"
+    desc: "Get up and running."
+    contents:
+      - getting-started
+  - title: "Methodology"
+    navbar: "Methodology"
+    desc: "The statistical model, priors, data augmentation, and the sampler."
+    contents:
+      - model-and-methods
+  - title: "Practical guides"
+    navbar: "Practical guides"
+    desc: "MCMC stability checks and running chains in parallel."
+    contents:
+      - convergence-and-diagnostics
+      - parallel-chains
+
+news:
+  releases:
+    - text: "Version 1.2.0"
+      href: https://github.com/victorney/exnexSurv/releases/tag/v1.2.0

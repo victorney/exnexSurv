@@ -57,10 +57,10 @@ test_that("new_exnex_surv enforces structural invariants", {
     cov_names = "age"
   )
   draws <- data.frame(
-    theta_1 = c(0, 0),
-    theta_2 = c(0, 0),
-    beta_1 = c(0, 0),
-    sigma = c(1, 1)
+    theta_1 = c(0.1, 0.2),
+    theta_2 = c(-0.2, 0.3),
+    beta_1 = c(0.01, 0.02),
+    sigma2 = c(1.1, 0.9)
   )
 
   fit <- exnex_surv(
@@ -69,7 +69,8 @@ test_that("new_exnex_surv enforces structural invariants", {
     priors = list(alpha = 1),
     iter = 4,
     warmup = 2,
-    chains = 1
+    chains = 1,
+    seed = 2719
   )
 
   rebuilt <- exnexSurv:::new_exnex_surv(

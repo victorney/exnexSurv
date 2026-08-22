@@ -4,11 +4,20 @@
 \alias{new_exnex_surv}
 \title{Constructor for exnex_surv Objects}
 \usage{
-new_exnex_surv(draws, data, priors, iter, warmup, chains, blueprint)
+new_exnex_surv(
+  draws,
+  data,
+  priors,
+  resolved_priors = priors,
+  iter,
+  warmup,
+  chains,
+  blueprint
+)
 }
 \arguments{
 \item{draws}{A data frame containing posterior samples.
-Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma.}
+Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma2.}
 
 \item{data}{A list containing:
 - time: Observed follow-up times
@@ -21,6 +30,9 @@ Columns are: theta_1, ..., theta_K, beta_1, ..., beta_P (if P > 0), sigma.}
 - cov_names: Covariate column names}
 
 \item{priors}{A list of prior specifications used for fitting.}
+
+\item{resolved_priors}{A named list of the prior hyperparameters actually
+used (defaults merged with any overrides supplied in \code{priors}).}
 
 \item{iter}{Total MCMC iterations performed.}
 

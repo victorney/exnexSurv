@@ -1,0 +1,196 @@
+---
+title: "Getting Started with exnexSurv"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with exnexSurv}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5
+)
+```
+
+## Overview
+
+`exnexSurv` fits Bayesian EXNEX survival models for right-censored log-normal data.
+The current interface supports:
+
+- a formula interface,
+- an `x`/`y` interface,
+- subgroup effects,
+- optional covariates,
+- posterior draws for `theta_j`, `beta`, and `sigma2`.
+
+## Simulate a simple dataset
+
+```{r}
+library(exnexSurv)
+library(survival)
+
+simulate_surv_data <- function(
+  theta,
+  sigma2,
+  beta = NULL,
+  n_per_group = 50,
+  censor_min = 4,
+  censor_max = 12,
+  seed = NULL
+) {
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  groups <- rep(seq_along(theta), each = n_per_group)
+  age_std <- rnorm(length(groups), mean = 0, sd = 1)
+  mean_log_time <- rep(theta, each = n_per_group)
+
+  if (!is.null(beta)) {
+    mean_log_time <- mean_log_time + beta * age_std
+  }
+
+  log_time <- rnorm(length(groups), mean = mean_log_time, sd = sqrt(sigma2))
+  true_time <- exp(log_time)
+  censor_time <- runif(length(groups), min = censor_min, max = censor_max)
+
+  data.frame(
+    time = pmin(true_time, censor_time),
+    event = as.integer(true_time <= censor_time),
+    group = factor(groups),
+    age_std = age_std
+  )
+}
+
+sim_data <- simulate_surv_data(
+  theta = c(1.1, 1.6, 2.0),
+  sigma2 = 0.25,
+  beta = -0.30,
+  n_per_group = 50,
+  seed = 6421
+)
+
+head(sim_data)
+mean(sim_data$event)
+```
+
+## Fit the model with a formula
+
+```{r}
+fit_formula <- exnex_surv(
+  Surv(time, event) ~ group + age_std,
+  data = sim_data,
+  iter = 1200,
+  warmup = 400,
+  chains = 1,
+  seed = 6421
+)
+
+print(fit_formula, show_trace = FALSE)
+summary(fit_formula)
+```
+
+The fitted object stores the processed data, posterior draws, and MCMC settings.
+You can inspect the model structure with the usual S3 methods.
+
+## Run multiple chains in parallel
+
+```{r}
+fit_parallel <- exnex_surv(
+  Surv(time, event) ~ group + age_std,
+  data = sim_data,
+  iter = 1200,
+  warmup = 400,
+  chains = 2,
+  parallel_chains = 2,
+  seed = 6421
+)
+
+print(fit_parallel, show_trace = FALSE)
+plot(
+  fit_parallel,
+  parameters = c("theta_1", "theta_2", "theta_3", "beta_1", "sigma2"),
+  ask = FALSE
+)
+```
+
+When `parallel_chains` is greater than 1, the chains are evaluated concurrently by R and the traceplots show all chains in the same panel for each parameter.
+
+If you do not want to use all available workers, set `parallel_chains` smaller than `chains`. For example, `chains = 4` and `parallel_chains = 2` runs four independent chains while evaluating two at a time.
+
+The fitted object stores the combined post-warmup draws from all chains in one table. Because each chain contributes the same number of post-warmup samples, the total number of rows is `(iter - warmup) * chains`.
+
+```{r}
+str(fit_formula$data)
+plot(
+  fit_formula,
+  parameters = c("theta_1", "theta_2", "sigma2"),
+  ask = FALSE
+)
+```
+
+## Fit the model with `x` and `y`
+
+```{r}
+fit_xy <- exnex_surv(
+  x = sim_data[c("group", "age_std")],
+  y = Surv(sim_data$time, sim_data$event),
+  iter = 1200,
+  warmup = 400,
+  chains = 1,
+  seed = 6421
+)
+
+summary(fit_xy)
+all.equal(fit_formula$draws, fit_xy$draws)
+```
+
+This is useful if predictors and outcomes are prepared separately.
+
+## Fit a model without covariates
+
+If the model only contains the subgroup variable, no `beta` terms are estimated.
+
+```{r}
+fit_no_cov <- exnex_surv(
+  Surv(time, event) ~ group,
+  data = sim_data,
+  iter = 1200,
+  warmup = 400,
+  chains = 1,
+  seed = 6421
+)
+
+summary(fit_no_cov)
+plot(fit_no_cov, ask = FALSE)
+```
+
+## Basic posterior summaries
+
+```{r}
+summary(fit_formula)
+```
+
+## Inspecting the resolved priors
+
+Whatever you pass to `priors`, the fitted object records the exact hyperparameters the
+sampler used, with defaults merged into the fields you did not supply. This is useful to
+confirm your customization was applied and to reproduce a fit.
+
+```{r}
+fit_formula$resolved_priors
+```
+
+To customize a prior, pass a named list to `priors`; for example,
+`priors = list(p_mix = 0.7, a_tau = 3, b_tau = 3)`. The fields `p_mix`, `m_nex`, and
+`v_nex` also accept a vector of length equal to the number of baskets, assigning one value
+per basket. See the vignette *The EXNEX Model, Priors, and Data Augmentation* for the full
+list of hyperparameters and how to set them.
+
+## Notes
+
+The current implementation supports multiple chains, including R-level parallel execution through `parallel_chains`. For a more careful convergence check, fit more than one chain and compare the traceplots and posterior summaries across chains.

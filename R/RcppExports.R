@@ -3,14 +3,24 @@
 
 #' Main Gibbs Sampler for EXNEX Survival Models
 #'
-#' Implements MCMC sampling for Bayesian EXNEX model with right-censored
-#' log-normal survival data. Supports optional covariates.
+#' Implements Gibbs sampling for Bayesian EXNEX right-censored
+#' log-normal survival models with optional covariates.
 #'
 #' @param time Vector of observed follow-up times (n-vector, all > 0)
 #' @param event Vector of event indicators (n-vector, 0 or 1)
 #' @param group Vector of group assignments (n-vector, integers 1 to K)
-#' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates
-#' @param priors List with prior specifications
+#' @param X Matrix of covariates (n x P). Can be empty (n x 0) if no covariates.
+#' @param priors Optional named list of prior hyperparameters. Supported
+#'   fields: \code{a_sigma}, \code{b_sigma}, \code{a_tau}, \code{b_tau}
+#'   (inverse-Gamma shape and scale), \code{p_mix} (EXNEX mixture weight),
+#'   \code{m_mu}, \code{v_mu} (exchangeable mean prior), \code{m_nex},
+#'   \code{v_nex} (nonexchangeable component), \code{v_beta} (variance of the
+#'   regression-coefficient prior). \code{p_mix}, \code{m_nex}, and
+#'   \code{v_nex} each accept either a scalar, replicated across baskets, or a
+#'   numeric vector of length K with one value per basket, matching the
+#'   basket-specific notation \eqn{p_{\mathrm{exch},j}}, \eqn{m_{0j}},
+#'   \eqn{v_{0j}} of the model. Absent fields keep the defaults; unknown
+#'   fields are ignored.
 #' @param iter Total number of MCMC iterations
 #' @param warmup Number of iterations to discard
 #' @param chains Number of independent chains to run

@@ -1,0 +1,202 @@
+---
+title: "Convergence and Diagnostics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Convergence and Diagnostics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 4.5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Overview
+
+This vignette shows a simple workflow for checking whether the sampler appears stable in practice.
+The package now supports multiple chains, including R-level parallel execution, so the examples below combine:
+
+- traceplots,
+- running means,
+- effective sample size approximations,
+- repeated fits with different seeds.
+
+## Simulate data
+
+```{r}
+library(exnexSurv)
+library(survival)
+library(ggplot2)
+library(bayesplot)
+
+simulate_surv_data <- function(
+  theta,
+  sigma2,
+  beta = NULL,
+  n_per_group = 60,
+  censor_min = 4,
+  censor_max = 12,
+  seed = NULL
+) {
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  groups <- rep(seq_along(theta), each = n_per_group)
+  age_std <- rnorm(length(groups), mean = 0, sd = 1)
+  mean_log_time <- rep(theta, each = n_per_group)
+
+  if (!is.null(beta)) {
+    mean_log_time <- mean_log_time + beta * age_std
+  }
+
+  log_time <- rnorm(length(groups), mean = mean_log_time, sd = sqrt(sigma2))
+  true_time <- exp(log_time)
+  censor_time <- runif(length(groups), min = censor_min, max = censor_max)
+
+  data.frame(
+    time = pmin(true_time, censor_time),
+    event = as.integer(true_time <= censor_time),
+    group = factor(groups),
+    age_std = age_std
+  )
+}
+
+sim_data <- simulate_surv_data(
+  theta = c(1.2, 1.7, 2.1),
+  sigma2 = 0.20,
+  beta = -0.35,
+  n_per_group = 60,
+  seed = 6841
+)
+
+mean(sim_data$event)
+```
+
+## Fit multiple chains
+
+```{r}
+fit <- exnex_surv(
+  Surv(time, event) ~ group + age_std,
+  data = sim_data,
+  iter = 3000,
+  warmup = 1000,
+  chains = 2,
+  parallel_chains = 2,
+  seed = 6841
+)
+
+print(fit, show_trace = FALSE)
+```
+
+This fit stores all post-warmup draws in one table. With `chains = 2`, each chain contributes the same number of post-warmup iterations, so chain-aware diagnostics can reconstruct the original chain layout from the total row count.
+
+## Traceplots
+
+```{r}
+plot(fit, ask = FALSE)
+```
+
+A healthy traceplot usually shows noisy fluctuations around a roughly stable level rather than long drifts or very sticky behavior.
+
+## Running means
+
+```{r}
+running_mean_df <- do.call(
+  rbind,
+  lapply(colnames(fit$draws), function(param) {
+    values <- fit$draws[[param]]
+    data.frame(
+      iteration = seq_along(values),
+      running_mean = cumsum(values) / seq_along(values),
+      parameter = param
+    )
+  })
+)
+
+ggplot(running_mean_df, aes(iteration, running_mean)) +
+  geom_line() +
+  facet_wrap(~ parameter, scales = "free_y") +
+  labs(
+    title = "Running posterior means",
+    x = "Post-warmup iteration",
+    y = "Running mean"
+  )
+```
+
+If the running means stabilize, that is usually a good sign that Monte Carlo error is shrinking.
+
+## Simple numerical diagnostics
+
+```{r}
+ess_simple <- function(x, max_lag = 100) {
+  acf_vals <- stats::acf(
+    x,
+    lag.max = min(max_lag, length(x) - 1),
+    plot = FALSE
+  )$acf[-1]
+
+  positive_acf <- acf_vals[acf_vals > 0]
+
+  if (length(positive_acf) == 0) {
+    return(length(x))
+  }
+
+  tau <- 1 + 2 * sum(positive_acf)
+  min(length(x), length(x) / tau)
+}
+
+diagnostics <- data.frame(
+  parameter = colnames(fit$draws),
+  mean = colMeans(fit$draws),
+  sd = apply(fit$draws, 2, sd),
+  lag1_acf = apply(fit$draws, 2, function(x) stats::acf(x, lag.max = 1, plot = FALSE)$acf[2]),
+  ess = apply(fit$draws, 2, ess_simple),
+  mcse = mapply(function(s, e) s / sqrt(e), apply(fit$draws, 2, sd), apply(fit$draws, 2, ess_simple)),
+  row.names = NULL
+)
+
+diagnostics
+```
+
+Lower autocorrelation and higher effective sample size are usually preferable.
+
+## Repeat the fit with different seeds
+
+```{r}
+fit_seeds <- lapply(c(6841, 7313, 8129), function(seed) {
+  exnex_surv(
+    Surv(time, event) ~ group + age_std,
+    data = sim_data,
+    iter = 3000,
+    warmup = 1000,
+    chains = 2,
+    parallel_chains = 2,
+    seed = seed
+  )
+})
+
+posterior_means_by_run <- do.call(
+  rbind,
+  lapply(fit_seeds, function(x) {
+    s <- summary(x)
+    stats::setNames(s$mean, s$parameter)
+  })
+)
+
+posterior_means_by_run
+apply(posterior_means_by_run, 2, sd)
+```
+
+If posterior means are very similar across runs, that supports stability.
+
+## Interpretation
+
+These diagnostics are practical checks, not formal proofs of convergence. Still, when traceplots look stable, running means flatten out, and repeated runs give similar posterior summaries, the fit is usually behaving reasonably well.
