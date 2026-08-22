@@ -300,6 +300,16 @@ exnex_surv_bridge <- function(
   workers <- min(parallel_chains, chains)
   cl <- parallel::makeCluster(workers)
   on.exit(parallel::stopCluster(cl), add = TRUE)
+  lib_paths <- .libPaths()
+  parallel::clusterCall(
+    cl,
+    function(paths) {
+      .libPaths(paths)
+      loadNamespace("exnexSurv")
+      NULL
+    },
+    lib_paths
+  )
 
   parallel::parLapply(
     cl,
