@@ -9,7 +9,8 @@ rmst(fit, tmax, newdata = NULL, level = 0.95, grid_points = 400, ...)
 \arguments{
 \item{fit}{A fitted `exnex_surv` object.}
 
-\item{tmax}{A positive scalar horizon up to which the RMST is computed.}
+\item{tmax}{A positive scalar horizon up to which the RMST is computed.
+Defaults to `max(fit$data$time)`.}
 
 \item{newdata}{Optional data frame (one row gives one RMST).}
 

@@ -31,4 +31,5 @@
 "_PACKAGE"
 #' @useDynLib exnexSurv, .registration = TRUE
 #' @importFrom Rcpp evalCpp
+#' @importFrom stats pnorm rnorm runif
 NULL

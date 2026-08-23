@@ -10,7 +10,8 @@ survival_curves(fit, newdata = NULL, times = NULL, level = 0.95, ...)
 \item{fit}{A fitted `exnex_surv` object.}
 
 \item{newdata}{Optional data frame with columns matching the covariates of
-the model (and optionally the group column). Each row yields one curve.}
+the model. If it contains a `group` column, that is used for the group
+index; otherwise the first group is used for all rows.}
 
 \item{times}{Optional numeric vector of times at which to evaluate the
 curves. If `NULL`, a sensible grid is built from the observed follow-up
@@ -38,6 +39,6 @@ obtain a full posterior distribution of \eqn{S(t)} at each time point.
 }
 \details{
 If `newdata` is supplied, each row is evaluated at its own group and
-covariate values; otherwise the covariate values are fixed at zero and the
+covariate values; otherwise the covariates are fixed at zero and the
 first group is used (with a warning if more than one group exists).
 }
