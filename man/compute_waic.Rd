@@ -12,7 +12,7 @@ compute_waic(fit, ...)
 \item{...}{Unused.}
 }
 \value{
-A named list with elements `waic`, `se_waic`, `lpd`, `p_waic`,
+A named list with elements `waic`, `se_elpd_waic`, `lpd`, `p_waic`,
   `elpd_waic`, and `pointwise` (an `n` by 3 matrix with columns `lpd`,
   `p_waic`, `waic`).
 }

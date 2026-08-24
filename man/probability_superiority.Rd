@@ -38,7 +38,7 @@ covariates. If `NULL`, covariates are set to zero.}
 \value{
 A named list with elements `prob` (posterior probability that the
   summary of group `a` exceeds that of group `b`), `summary` (which summary
-  was used), `level`, and `groups` (the two groups compared).
+  was used), and `groups` (the two groups compared).
 }
 \description{
 Estimates the posterior probability that a certain scalar summary of the

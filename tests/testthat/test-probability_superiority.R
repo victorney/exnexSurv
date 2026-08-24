@@ -1,8 +1,8 @@
 testthat::local_edition(3)
 
 set.seed(303)
-sim <- simulate_data(n_each = 20, beta = c(0.5), sigma = 1.1,
-                     resistant = c(2, 8), resist_delta = -1.0,
+sim <- simulate_data(n = 20, beta = c(0.5), sigma = 1.1,
+                     outlier_baskets = c(2, 8), resist_delta = -1.0,
                      censoring_rate = 0.3, seed = 12)
 fit <- exnexSurv::exnex_surv(
   survival::Surv(time, event) ~ group + x1,
@@ -12,7 +12,7 @@ fit <- exnexSurv::exnex_surv(
 test_that("probability_superiority on median is a valid probability", {
   p <- probability_superiority(fit, a = 1, b = 3, function_of = "median")
   expect_type(p, "list")
-  expect_named(p, c("prob", "summary", "level", "groups"))
+  expect_named(p, c("prob", "summary", "groups"))
   expect_true(p$prob >= 0 & p$prob <= 1)
 })
 

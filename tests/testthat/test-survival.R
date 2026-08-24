@@ -14,7 +14,7 @@ make_fit <- function(data, formula, ...) {
 }
 
 set.seed(101)
-sim <- simulate_data(n_each = 15, beta = c(0.4, -0.2), sigma = 1.0,
+sim <- simulate_data(n = 15, beta = c(0.4, -0.2), sigma = 1.0,
                      resist_delta = -0.7, censoring_rate = 0.3, seed = 7)
 
 fit_cov <- make_fit(sim, survival::Surv(time, event) ~ group + x1 + x2)

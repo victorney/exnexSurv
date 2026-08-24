@@ -53,7 +53,14 @@ survival_curves <- function(fit, newdata = NULL, times = NULL, level = 0.95, ...
     nr <- 1L
     grp_i <- 1L
     cov_rows <- matrix(0, nrow = 1, ncol = P)
-    labels <- "all"
+    gn <- sort(unique(as.character(data$group)))
+    labels <- gn[1]
+    if (K > 1L) {
+      warning("More than one group present (", paste(gn, collapse = ", "),
+              "). Only the first group '", gn[1], "' is used. Supply ",
+              "`newdata` with a `group` column to evaluate specific groups.",
+              call. = FALSE)
+    }
   } else {
     nr <- nrow(newdata)
     grp_i <- rep(1L, nr)
@@ -179,7 +186,17 @@ median_survival <- function(fit, newdata = NULL, level = 0.95, ...) {
   n_draws <- nrow(draws)
 
   if (is.null(newdata)) {
-    nr <- 1L; grp_i <- 1L; cov_rows <- matrix(0, 1, P); labels <- "all"
+    nr <- 1L
+    grp_i <- 1L
+    cov_rows <- matrix(0, 1, P)
+    gn <- sort(unique(as.character(fit$data$group)))
+    labels <- gn[1]
+    if (K > 1L) {
+      warning("More than one group present (", paste(gn, collapse = ", "),
+              "). Only the first group '", gn[1], "' is used. Supply ",
+              "`newdata` with a `group` column to evaluate specific groups.",
+              call. = FALSE)
+    }
   } else {
     nr <- nrow(newdata)
     grp_i <- rep(1L, nr)
@@ -224,13 +241,15 @@ median_survival <- function(fit, newdata = NULL, level = 0.95, ...) {
 #'
 #' @return A `data.frame` with columns `group`, `rmst`, `lower`, `upper`.
 #' @export
-rmst <- function(fit, tmax, newdata = NULL, level = 0.95, grid_points = 400, ...) {
+rmst <- function(fit, tmax = NULL, newdata = NULL, level = 0.95, grid_points = 400, ...) {
   checkmate::assert_class(fit, "exnex_surv")
-  checkmate::assert_number(tmax, lower = 0, finite = TRUE)
-  if (tmax <= 0) stop("`tmax` must be positive.", call. = FALSE)
   checkmate::assert_data_frame(newdata, null.ok = TRUE)
   checkmate::assert_number(level, lower = 0, upper = 1, finite = TRUE)
   checkmate::assert_int(grid_points, lower = 100)
+
+  if (is.null(tmax)) tmax <- max(fit$data$time)
+  checkmate::assert_number(tmax, lower = 0, finite = TRUE)
+  if (tmax <= 0) stop("`tmax` must be positive.", call. = FALSE)
 
   g_times <- seq(0, tmax, length.out = grid_points)
   n_g <- length(g_times)
@@ -245,7 +264,17 @@ rmst <- function(fit, tmax, newdata = NULL, level = 0.95, grid_points = 400, ...
   n_draws <- nrow(draws)
 
   if (is.null(newdata)) {
-    nr <- 1L; grp_i <- 1L; cov_rows <- matrix(0, 1, P); labels <- "all"
+    nr <- 1L
+    grp_i <- 1L
+    cov_rows <- matrix(0, 1, P)
+    gn <- sort(unique(as.character(data$group)))
+    labels <- gn[1]
+    if (K > 1L) {
+      warning("More than one group present (", paste(gn, collapse = ", "),
+              "). Only the first group '", gn[1], "' is used. Supply ",
+              "`newdata` with a `group` column to evaluate specific groups.",
+              call. = FALSE)
+    }
   } else {
     nr <- nrow(newdata)
     grp_i <- rep(1L, nr)

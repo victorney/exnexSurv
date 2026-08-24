@@ -21,7 +21,7 @@
 #'
 #' @return A named list with elements `prob` (posterior probability that the
 #'   summary of group `a` exceeds that of group `b`), `summary` (which summary
-#'   was used), `level`, and `groups` (the two groups compared).
+#'   was used), and `groups` (the two groups compared).
 #' @export
 probability_superiority <- function(
   fit,
@@ -59,18 +59,21 @@ probability_superiority <- function(
   cov_row_a <- cov_row_b <- numeric(fit$data$n_covariates)
   if (!is.null(newdata)) {
     checkmate::assert_data_frame(newdata)
-    if (!nrow(newdata) %in% c(a, b) && nrow(newdata) != 2) {
-      stop("`newdata` should have one row per group being compared.",
-           call. = FALSE)
+    if (nrow(newdata) != 2L) {
+      stop("`newdata` must have exactly 2 rows: row 1 for group '",
+           a, "', row 2 for group '", b, "'.", call. = FALSE)
     }
-    gn <- sort(unique(as.character(fit$data$group)))
-    if (nrow(newdata) == 2) {
-      cov_row_a <- row_from_newdata(newdata, 1, fit)
-      cov_row_b <- row_from_newdata(newdata, 2, fit)
-    } else {
-      cov_row_a <- row_from_newdata(newdata, a, fit)
-      cov_row_b <- row_from_newdata(newdata, b, fit)
+    # If a `group` column is present, use it to validate the expected groups.
+    if ("group" %in% colnames(newdata)) {
+      gn <- sort(unique(as.character(fit$data$group)))
+      got <- as.character(newdata[["group"]])
+      if (got[1] != gn[a] || got[2] != gn[b]) {
+        stop("`newdata$group` must be c('", gn[a], "', '", gn[b],
+             "'), got c('", got[1], "', '", got[2], "').", call. = FALSE)
+      }
     }
+    cov_row_a <- row_from_newdata(newdata, 1L, fit)
+    cov_row_b <- row_from_newdata(newdata, 2L, fit)
   }
 
   summary_a <- draw_summary(fit, a, function_of, cov_row_a, times, tmax)
@@ -81,7 +84,6 @@ probability_superiority <- function(
   list(
     prob = prob,
     summary = function_of,
-    level = NULL,
     groups = c(a = a, b = b)
   )
 }

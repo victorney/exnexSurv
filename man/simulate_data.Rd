@@ -5,10 +5,11 @@
 \title{Simulate basket-trial log-normal survival data}
 \usage{
 simulate_data(
-  n_each = 30,
+  n = 30,
+  K = 9,
   beta = c(0.5, -0.2),
   sigma = 1.2,
-  resistant = NULL,
+  outlier_baskets = NULL,
   resist_delta = -0.8,
   censoring_rate = NULL,
   censor_upper = NULL,
@@ -17,17 +18,22 @@ simulate_data(
 )
 }
 \arguments{
-\item{n_each}{Number of patients in each basket.}
+\item{n}{Number of patients per basket. A scalar is replicated across all
+`K` baskets; a numeric vector of length `K` assigns a size to each basket
+individually.}
+
+\item{K}{Number of baskets (default `9`).}
 
 \item{beta}{Numeric vector of regression coefficients for the covariates.
 Length determines the number of covariates.}
 
 \item{sigma}{Residual standard deviation (default `1.2`).}
 
-\item{resistant}{Optional integer vector of basket indices to make
-"resistant" (their true `theta` is shifted away from the population).}
+\item{outlier_baskets}{Optional integer vector of basket indices (1 to K)
+whose true location is shifted away from the healthy population. These are
+the baskets the EXNEX model is designed to detect.}
 
-\item{resist_delta}{Additive shift applied to the `theta` of resistant
+\item{resist_delta}{Additive shift applied to the `theta` of outlier
 baskets (default `-0.8`).}
 
 \item{censoring_rate}{Approximate proportion of censoring after
@@ -35,8 +41,8 @@ baskets (default `-0.8`).}
 
 \item{censor_upper}{Upper bound of the censoring-time uniform distribution.}
 
-\item{theta}{Null-posterior location for the non-resistant baskets; a scalar
-used as a base around which healthy baskets vary.}
+\item{theta}{Baseline location for the healthy (non-outlier) baskets; a
+scalar used as the centre around which the healthy basket locations vary.}
 
 \item{seed}{Optional seed for reproducibility.}
 }
@@ -50,8 +56,8 @@ Generates a synthetic dataset from the log-normal AFT model used by
 `exnexSurv`:
 \deqn{\log T_i = \theta_{g[i]} + X_i^\top\beta + \varepsilon,\qquad
   \varepsilon\sim\mathcal N(0,\sigma^2).}
-Healthy (non-resistant) baskets draw their location from a common baseline
-plus random noise; "resistant" baskets (the ones the EXNEX model is designed
-to detect) have their location shifted by `resist_delta`. The function is
-useful for simulation studies and teaching examples.
+Healthy baskets draw their location from a common baseline plus random noise;
+"outlier" baskets (specified via `outlier_baskets`) have their location
+shifted by `resist_delta`. The function is useful for simulation studies and
+teaching examples.
 }

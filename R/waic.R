@@ -27,7 +27,7 @@
 #' @param fit A fitted `exnex_surv` object.
 #' @param ... Unused.
 #'
-#' @return A named list with elements `waic`, `se_waic`, `lpd`, `p_waic`,
+#' @return A named list with elements `waic`, `se_elpd_waic`, `lpd`, `p_waic`,
 #'   `elpd_waic`, and `pointwise` (an `n` by 3 matrix with columns `lpd`,
 #'   `p_waic`, `waic`).
 #' @export
@@ -95,7 +95,7 @@ compute_waic <- function(fit, ...) {
 
   list(
     waic = waic,
-    se_waic = se_points,
+    se_elpd_waic = se_points,
     lpd = lpd,
     p_waic = p_waic,
     elpd_waic = elpd_waic,
@@ -112,7 +112,7 @@ compute_waic <- function(fit, ...) {
 #' @param digit Number of decimal places for the reported statistics.
 #'
 #' @return A `data.frame` with one row per model and columns `model`, `waic`,
-#'   `se_waic`, `lpd`, `p_waic`, `elpd_waic`.
+#'   `se_elpd_waic`, `lpd`, `p_waic`, `elpd_waic`.
 #' @export
 compare_waic <- function(..., digit = 2) {
   fits <- list(...)
@@ -129,7 +129,7 @@ compare_waic <- function(..., digit = 2) {
     data.frame(
       model = fit_names[i],
       waic = w$waic,
-      se_waic = w$se_waic,
+      se_elpd_waic = w$se_elpd_waic,
       lpd = w$lpd,
       p_waic = w$p_waic,
       elpd_waic = w$elpd_waic
@@ -139,6 +139,6 @@ compare_waic <- function(..., digit = 2) {
   out <- do.call(rbind, out)
   out <- out[order(out$waic), ]
   rownames(out) <- NULL
-  out[, c("waic", "se_waic")] <- round(out[, c("waic", "se_waic")], digit)
+  out[, c("waic", "se_elpd_waic")] <- round(out[, c("waic", "se_elpd_waic")], digit)
   out
 }

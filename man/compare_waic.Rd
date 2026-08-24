@@ -13,7 +13,7 @@ compare_waic(..., digit = 2)
 }
 \value{
 A `data.frame` with one row per model and columns `model`, `waic`,
-  `se_waic`, `lpd`, `p_waic`, `elpd_waic`.
+  `se_elpd_waic`, `lpd`, `p_waic`, `elpd_waic`.
 }
 \description{
 Computes [compute_waic()] for each supplied fit and reports them in a

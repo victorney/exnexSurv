@@ -24,9 +24,9 @@ them using a small simulated example.
 ## A quick simulated example
 
 We first generate a basket-trial dataset with `simulate_data()`. By default it
-creates 9 baskets (sizes from 30 down to 5), a single covariate, and lets us
-flag some baskets as "resistant" (their location is shifted away from the
-healthy population) — exactly the situation the EXNEX model is designed to
+creates `K = 9` baskets with `n = 30` patients each, a single covariate, and
+lets us flag some baskets as "resistant" (their location is shifted away from
+the healthy population) — exactly the situation the EXNEX model is designed to
 handle.
 
 ```{r}
@@ -35,10 +35,10 @@ library(survival)
 
 set.seed(42)
 d <- simulate_data(
-  n_each = 20,
+  n = 20,
   beta = 0.5,
   sigma = 1.1,
-  resistant = c(2, 8),
+  outlier_baskets = c(2, 8),
   resist_delta = -1.0,
   censoring_rate = 0.3,
   seed = 1
@@ -124,7 +124,7 @@ standard error, the log pointwise predictive density (`lpd`) and the penalty
 
 ```{r}
 w <- compute_waic(fit)
-str(w[c("waic", "se_waic", "lpd", "p_waic", "elpd_waic")])
+str(w[c("waic", "se_elpd_waic", "lpd", "p_waic", "elpd_waic")])
 ```
 
 `compare_waic()` contrasts several fits (e.g. a full model vs. a group-only
@@ -157,7 +157,7 @@ probability_superiority(fit, a = 1, b = 2, function_of = "survival", times = 3)
 probability_superiority(fit, a = 1, b = 2, function_of = "rmst", tmax = 10)
 ```
 
-In this example basket 1 is far more likely than basket 3 to have the longer
-median survival, consistent with basket 3 being (approximately) healthy while
-basket 1 is not resettled far from it; the exact numbers will vary with the
-simulated data and the MCMC run.
+In this example baskets 1 and 3 are both healthy (only 2 and 8 are resistant),
+so `probability_superiority()` comparing them has no reason to prefer one over
+the other and returns a probability close to 0.5. The exact numbers will vary
+with the simulated data and the MCMC run.

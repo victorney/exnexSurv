@@ -4,7 +4,7 @@
 \alias{rmst}
 \title{Restricted mean survival time (RMST) from an exnex_surv fit}
 \usage{
-rmst(fit, tmax, newdata = NULL, level = 0.95, grid_points = 400, ...)
+rmst(fit, tmax = NULL, newdata = NULL, level = 0.95, grid_points = 400, ...)
 }
 \arguments{
 \item{fit}{A fitted `exnex_surv` object.}
