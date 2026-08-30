@@ -113,7 +113,8 @@ These functions are internal and not exported; use with caution.
 - [`.extract_time_vector()`](https://victorney.github.io/exnexSurv/reference/dot-extract_time_vector.md)
   : Extract time vector from outcomes
 - [`.make_chain_seeds()`](https://victorney.github.io/exnexSurv/reference/dot-make_chain_seeds.md)
-  : Derive one deterministic seed per chain
+  : Derive one deterministic seed per chain (restores the global RNG
+  state)
 - [`.run_chains_parallel_exnex()`](https://victorney.github.io/exnexSurv/reference/dot-run_chains_parallel_exnex.md)
   : Run multiple chains in parallel via PSOCK workers
 - [`.run_single_chain_exnex()`](https://victorney.github.io/exnexSurv/reference/dot-run_single_chain_exnex.md)
