@@ -47,23 +47,13 @@ arma::vec draw_normal_from_precision(const arma::mat& precision, const arma::vec
     return arma::vec();
   }
 
-  arma::mat precision_use = 0.5 * (precision + precision.t());
+  arma::mat precision_sym = 0.5 * (precision + precision.t());
   arma::mat chol_upper;
-  double jitter = 1e-8;
-  bool ok = false;
-
-  for (int attempt = 0; attempt < 8; ++attempt) {
-    ok = arma::chol(chol_upper, precision_use);
-    if (ok) {
-      break;
+  if (!arma::chol(chol_upper, precision_sym)) {
+    precision_sym.diag() += 1e-8;
+    if (!arma::chol(chol_upper, precision_sym)) {
+      Rcpp::stop("Failed to compute a stable Cholesky decomposition.");
     }
-
-    precision_use.diag() += jitter;
-    jitter *= 10.0;
-  }
-
-  if (!ok) {
-    Rcpp::stop("Failed to compute a stable Cholesky decomposition.");
   }
 
   arma::vec tmp = arma::solve(arma::trimatl(chol_upper.t()), rhs);

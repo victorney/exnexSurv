@@ -81,6 +81,24 @@ exnex_surv.default <- function(x, ...) {
   )
 }
 
+#' Shared validation for common exnex_surv arguments
+#' @keywords internal
+validate_args <- function(priors, iter, warmup, chains, parallel_chains, group_col, seed) {
+  checkmate::assert_list(priors)
+  checkmate::assert_int(iter, lower = 1)
+  checkmate::assert_int(warmup, lower = 0)
+  checkmate::assert_int(chains, lower = 1)
+  checkmate::assert_int(parallel_chains, lower = 1)
+  if (parallel_chains > chains) {
+    stop("`parallel_chains` (", parallel_chains, ") must be less than or equal to `chains` (", chains, ").", call. = FALSE)
+  }
+  checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
+  checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
+  if (warmup >= iter) {
+    stop("`warmup` (", warmup, ") must be less than `iter` (", iter, ").", call. = FALSE)
+  }
+}
+
 #' @param data A data frame containing the variables in the formula.
 #' @param priors Optional named list of prior hyperparameters. Supported fields:
 #'   \code{a_sigma}, \code{b_sigma}, \code{a_tau}, \code{b_tau}
@@ -124,60 +142,20 @@ exnex_surv.formula <- function(
 ) {
   checkmate::assert_formula(formula)
   checkmate::assert_data_frame(data, min.rows = 1, min.cols = 2)
-  checkmate::assert_list(priors)
-  checkmate::assert_int(iter, lower = 1)
-  checkmate::assert_int(warmup, lower = 0)
-  checkmate::assert_int(chains, lower = 1)
-  checkmate::assert_int(parallel_chains, lower = 1)
-  if (parallel_chains > chains) {
-    stop(
-      "`parallel_chains` (",
-      parallel_chains,
-      ") must be less than or equal to `chains` (",
-      chains,
-      ").",
-      call. = FALSE
-    )
-  }
-  checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
-  checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
-
-  if (warmup >= iter) {
-    stop(
-      "`warmup` (",
-      warmup,
-      ") must be less than `iter` (",
-      iter,
-      ").",
-      call. = FALSE
-    )
-  }
+  validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
 
   if (!is.null(group_col) && !group_col %in% colnames(data)) {
-    stop(
-      "Column '",
-      group_col,
-      "' not found in data.",
-      call. = FALSE
-    )
+    stop("Column '", group_col, "' not found in data.", call. = FALSE)
   }
 
   if (is.null(group_col)) {
     rhs_vars <- all.vars(formula[[3]])
     if (length(rhs_vars) == 0) {
-      stop(
-        "Formula must have at least one RHS variable (the group).",
-        call. = FALSE
-      )
+      stop("Formula must have at least one RHS variable (the group).", call. = FALSE)
     }
     group_col <- rhs_vars[1]
     if (!group_col %in% colnames(data)) {
-      stop(
-        "Column '",
-        group_col,
-        "' not found in data.",
-        call. = FALSE
-      )
+      stop("Column '", group_col, "' not found in data.", call. = FALSE)
     }
   }
 
@@ -221,64 +199,19 @@ exnex_surv.data.frame <- function(
   checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
 
   if (!inherits(y, "Surv") && !is.data.frame(y) && !is.matrix(y)) {
-    stop(
-      "`y` must be a Surv object, data frame, or matrix. ",
-      "Got ",
-      class(y)[1],
-      ".",
-      call. = FALSE
-    )
+    stop("`y` must be a Surv object, data frame, or matrix. Got ", class(y)[1], ".", call. = FALSE)
   }
 
-  checkmate::assert_list(priors)
-  checkmate::assert_int(iter, lower = 1)
-  checkmate::assert_int(warmup, lower = 0)
-  checkmate::assert_int(chains, lower = 1)
-  checkmate::assert_int(parallel_chains, lower = 1)
-  if (parallel_chains > chains) {
-    stop(
-      "`parallel_chains` (",
-      parallel_chains,
-      ") must be less than or equal to `chains` (",
-      chains,
-      ").",
-      call. = FALSE
-    )
-  }
-  checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
-  checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
+  validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
 
   n_y <- nrow(y)
 
   if (nrow(x) != n_y) {
-    stop(
-      "Number of rows in predictors (",
-      nrow(x),
-      ") does not match outcomes (",
-      n_y,
-      ").",
-      call. = FALSE
-    )
-  }
-
-  if (warmup >= iter) {
-    stop(
-      "`warmup` (",
-      warmup,
-      ") must be less than `iter` (",
-      iter,
-      ").",
-      call. = FALSE
-    )
+    stop("Number of rows in predictors (", nrow(x), ") does not match outcomes (", n_y, ").", call. = FALSE)
   }
 
   if (!is.null(group_col) && !group_col %in% colnames(x)) {
-    stop(
-      "Column '",
-      group_col,
-      "' not found in predictors.",
-      call. = FALSE
-    )
+    stop("Column '", group_col, "' not found in predictors.", call. = FALSE)
   }
 
   if (is.null(group_col)) {

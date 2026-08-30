@@ -230,37 +230,24 @@ exnex_surv_bridge <- function(
   }
 }
 
-#' Derive one deterministic seed per chain
+#' Derive one deterministic seed per chain (restores the global RNG state)
 #' @keywords internal
 .make_chain_seeds <- function(chains, seed = NULL) {
-  checkmate::assert_int(chains, lower = 1)
-  checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
-
   if (!is.null(seed)) {
-    old_seed_exists <- exists(
-      ".Random.seed",
-      envir = .GlobalEnv,
-      inherits = FALSE
-    )
-    if (old_seed_exists) {
+    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+    if (had_seed) {
       old_seed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
     }
     on.exit(
-      {
-        if (old_seed_exists) {
-          assign(".Random.seed", old_seed, envir = .GlobalEnv)
-        } else if (
-          exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
-        ) {
-          rm(".Random.seed", envir = .GlobalEnv)
-        }
+      if (had_seed) {
+        assign(".Random.seed", old_seed, envir = .GlobalEnv)
+      } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+        rm(".Random.seed", envir = .GlobalEnv)
       },
       add = TRUE
     )
-
     set.seed(seed)
   }
-
   sample.int(.Machine$integer.max, size = chains, replace = FALSE)
 }
 

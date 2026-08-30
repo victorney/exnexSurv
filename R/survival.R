@@ -1,3 +1,37 @@
+resolve_newdata <- function(fit, newdata) {
+  data <- fit$data
+  K <- data$n_groups
+  P <- data$n_covariates
+  if (is.null(newdata)) {
+    nr <- 1L
+    grp_i <- 1L
+    cov_rows <- matrix(0, nrow = 1, ncol = P)
+    gn <- sort(unique(as.character(data$group)))
+    labels <- gn[1]
+    if (K > 1L) {
+      warning("More than one group present (", paste(gn, collapse = ", "),
+              "). Only the first group '", gn[1], "' is used. Supply ",
+              "`newdata` with a `group` column to evaluate specific groups.",
+              call. = FALSE)
+    }
+  } else {
+    nr <- nrow(newdata)
+    grp_i <- rep(1L, nr)
+    if ("group" %in% colnames(newdata)) {
+      gn <- sort(unique(as.character(data$group)))
+      grp_i <- match(as.character(newdata[["group"]]), gn)
+      if (anyNA(grp_i)) stop("`newdata$group` contains unknown levels.", call. = FALSE)
+    }
+    cov_rows <- if (P > 0) {
+      as.matrix(newdata[, data$cov_names, drop = FALSE])
+    } else {
+      matrix(numeric(0), nrow = nr, ncol = 0)
+    }
+    labels <- as.character(seq_len(nr))
+  }
+  list(nr = nr, grp_i = grp_i, cov_rows = cov_rows, labels = labels)
+}
+
 #' Survival curves from an exnex_surv fit
 #'
 #' Computes posterior survival curves \eqn{S(t) = \Pr(T > t)} from a fitted
@@ -48,34 +82,11 @@ survival_curves <- function(fit, newdata = NULL, times = NULL, level = 0.95, ...
     times <- seq(0, max(data$time), length.out = 100)
   }
 
-  # Resolve evaluation grid for each newdata row
-  if (is.null(newdata)) {
-    nr <- 1L
-    grp_i <- 1L
-    cov_rows <- matrix(0, nrow = 1, ncol = P)
-    gn <- sort(unique(as.character(data$group)))
-    labels <- gn[1]
-    if (K > 1L) {
-      warning("More than one group present (", paste(gn, collapse = ", "),
-              "). Only the first group '", gn[1], "' is used. Supply ",
-              "`newdata` with a `group` column to evaluate specific groups.",
-              call. = FALSE)
-    }
-  } else {
-    nr <- nrow(newdata)
-    grp_i <- rep(1L, nr)
-    if ("group" %in% colnames(newdata)) {
-      gn <- sort(unique(as.character(data$group)))
-      grp_i <- match(as.character(newdata[["group"]]), gn)
-      if (anyNA(grp_i)) stop("`newdata$group` contains unknown levels.", call. = FALSE)
-    }
-    cov_rows <- if (P > 0) {
-      as.matrix(newdata[, data$cov_names, drop = FALSE])
-    } else {
-      matrix(numeric(0), nrow = nr, ncol = 0)
-    }
-    labels <- as.character(seq_len(nr))
-  }
+  nd <- resolve_newdata(fit, newdata)
+  nr <- nd$nr
+  grp_i <- nd$grp_i
+  cov_rows <- nd$cov_rows
+  labels <- nd$labels
 
   # Build a long evaluation grid: for each newdata row, repeat all times
   n_t <- length(times)
@@ -185,33 +196,11 @@ median_survival <- function(fit, newdata = NULL, level = 0.95, ...) {
   beta_matrix <- if (P > 0) as.matrix(draws[, paste0("beta_", seq_len(P)), drop = FALSE]) else NULL
   n_draws <- nrow(draws)
 
-  if (is.null(newdata)) {
-    nr <- 1L
-    grp_i <- 1L
-    cov_rows <- matrix(0, 1, P)
-    gn <- sort(unique(as.character(fit$data$group)))
-    labels <- gn[1]
-    if (K > 1L) {
-      warning("More than one group present (", paste(gn, collapse = ", "),
-              "). Only the first group '", gn[1], "' is used. Supply ",
-              "`newdata` with a `group` column to evaluate specific groups.",
-              call. = FALSE)
-    }
-  } else {
-    nr <- nrow(newdata)
-    grp_i <- rep(1L, nr)
-    if ("group" %in% colnames(newdata)) {
-      gn <- sort(unique(as.character(fit$data$group)))
-      grp_i <- match(as.character(newdata[["group"]]), gn)
-      if (anyNA(grp_i)) stop("`newdata$group` contains unknown levels.", call. = FALSE)
-    }
-    cov_rows <- if (P > 0) {
-      as.matrix(newdata[, data$cov_names, drop = FALSE])
-    } else {
-      matrix(numeric(0), nrow = nr, ncol = 0)
-    }
-    labels <- as.character(seq_len(nr))
-  }
+  nd <- resolve_newdata(fit, newdata)
+  nr <- nd$nr
+  grp_i <- nd$grp_i
+  cov_rows <- nd$cov_rows
+  labels <- nd$labels
 
   probs <- c((1 - level) / 2, 0.5, 1 - (1 - level) / 2)
   out <- lapply(seq_len(nr), function(i) {
@@ -263,33 +252,11 @@ rmst <- function(fit, tmax = NULL, newdata = NULL, level = 0.95, grid_points = 4
   sigma <- sqrt(draws$sigma2)
   n_draws <- nrow(draws)
 
-  if (is.null(newdata)) {
-    nr <- 1L
-    grp_i <- 1L
-    cov_rows <- matrix(0, 1, P)
-    gn <- sort(unique(as.character(data$group)))
-    labels <- gn[1]
-    if (K > 1L) {
-      warning("More than one group present (", paste(gn, collapse = ", "),
-              "). Only the first group '", gn[1], "' is used. Supply ",
-              "`newdata` with a `group` column to evaluate specific groups.",
-              call. = FALSE)
-    }
-  } else {
-    nr <- nrow(newdata)
-    grp_i <- rep(1L, nr)
-    if ("group" %in% colnames(newdata)) {
-      gn <- sort(unique(as.character(data$group)))
-      grp_i <- match(as.character(newdata[["group"]]), gn)
-      if (anyNA(grp_i)) stop("`newdata$group` contains unknown levels.", call. = FALSE)
-    }
-    cov_rows <- if (P > 0) {
-      as.matrix(newdata[, data$cov_names, drop = FALSE])
-    } else {
-      matrix(numeric(0), nrow = nr, ncol = 0)
-    }
-    labels <- as.character(seq_len(nr))
-  }
+  nd <- resolve_newdata(fit, newdata)
+  nr <- nd$nr
+  grp_i <- nd$grp_i
+  cov_rows <- nd$cov_rows
+  labels <- nd$labels
 
   # For one (group, cov_row), compute RMST draws
   rmst_draws <- function(grp, cov_row) {

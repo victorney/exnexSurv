@@ -72,8 +72,14 @@ probability_superiority <- function(
              "'), got c('", got[1], "', '", got[2], "').", call. = FALSE)
       }
     }
-    cov_row_a <- row_from_newdata(newdata, 1L, fit)
-    cov_row_b <- row_from_newdata(newdata, 2L, fit)
+    cov_names <- fit$data$cov_names
+    if (length(cov_names) > 0) {
+      if (!all(cov_names %in% colnames(newdata))) {
+        stop("`newdata` must contain columns: ", paste(cov_names, collapse = ", "), call. = FALSE)
+      }
+      cov_row_a <- as.numeric(newdata[1, cov_names, drop = FALSE])
+      cov_row_b <- as.numeric(newdata[2, cov_names, drop = FALSE])
+    }
   }
 
   summary_a <- draw_summary(fit, a, function_of, cov_row_a, times, tmax)
@@ -122,16 +128,3 @@ draw_summary <- function(fit, group_idx, function_of, cov_row, times, tmax) {
   stop("Unknown summary function.", call. = FALSE)
 }
 
-# internal: extract a covariate row from newdata for a given group, using the
-# model's covariate names; rows are assumed ordered by group.
-row_from_newdata <- function(newdata, which_group, fit) {
-  P <- fit$data$n_covariates
-  if (P == 0) return(numeric(0))
-  cov_names <- fit$data$cov_names
-  if (!all(cov_names %in% colnames(newdata))) {
-    stop("`newdata` must contain columns: ", paste(cov_names, collapse = ", "),
-         call. = FALSE)
-  }
-  if (which_group > nrow(newdata)) stop("Not enough rows in `newdata`.", call. = FALSE)
-  as.numeric(newdata[which_group, cov_names, drop = FALSE])
-}

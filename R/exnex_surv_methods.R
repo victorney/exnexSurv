@@ -30,33 +30,6 @@ summary.exnex_surv <- function(object, probs = c(0.05, 0.5, 0.95), ...) {
   out
 }
 
-.as_mcmc_array_exnex_surv <- function(draws, chains) {
-  checkmate::assert_data_frame(draws, min.rows = 1, min.cols = 1)
-  checkmate::assert_int(chains, lower = 1)
-
-  n_draws <- nrow(draws)
-  if (n_draws %% chains != 0) {
-    stop(
-      "Number of draw rows must be divisible by number of chains.",
-      call. = FALSE
-    )
-  }
-
-  n_iter <- n_draws / chains
-  arr <- array(
-    as.matrix(draws),
-    dim = c(as.integer(n_iter), chains, ncol(draws))
-  )
-
-  dimnames(arr) <- list(
-    iteration = as.character(seq_len(as.integer(n_iter))),
-    chain = paste0("chain_", seq_len(chains)),
-    parameter = colnames(draws)
-  )
-
-  arr
-}
-
 #' Plot parameter traces from an exnex_surv fit
 #'
 #' Generates one bayesplot traceplot per parameter.
@@ -110,7 +83,10 @@ plot.exnex_surv <- function(x, parameters = NULL, ask = interactive(), ...) {
   on.exit(graphics::par(ask = old_ask), add = TRUE)
   graphics::par(ask = ask)
 
-  arr <- .as_mcmc_array_exnex_surv(draws, chains = x$chains)
+  n_draws <- nrow(draws)
+  n_iter <- n_draws / x$chains
+  arr <- array(as.matrix(draws), dim = c(as.integer(n_iter), x$chains, ncol(draws)))
+  dimnames(arr) <- list(iteration = as.character(seq_len(as.integer(n_iter))), chain = paste0("chain_", seq_len(x$chains)), parameter = colnames(draws))
 
   for (param in parameters) {
     trace_plot <- bayesplot::mcmc_trace(arr, pars = param)
