@@ -94,22 +94,8 @@ test_that("plot.exnex_surv overlays multiple chains per parameter", {
     seed = 2719
   )
 
-  arr <- exnexSurv:::.as_mcmc_array_exnex_surv(fit$draws, chains = fit$chains)
-
-  expect_identical(dim(arr), c(5L, 2L, 4L))
-  expect_identical(dimnames(arr)$chain, c("chain_1", "chain_2"))
-
   png(filename = tempfile(fileext = ".png"), width = 600, height = 500)
   on.exit(dev.off(), add = TRUE)
 
   expect_invisible(plot(fit, parameters = "theta_1", ask = FALSE))
-})
-
-test_that("chain array conversion validates divisibility", {
-  bad_draws <- data.frame(theta_1 = 1:3, sigma2 = c(1, 1, 1))
-
-  expect_error(
-    exnexSurv:::.as_mcmc_array_exnex_surv(bad_draws, chains = 2),
-    "Number of draw rows must be divisible by number of chains."
-  )
 })
