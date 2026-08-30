@@ -7,8 +7,12 @@
 <url><loc>https://victorney.github.io/exnexSurv/articles/index.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/articles/model-and-methods.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/articles/parallel-chains.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/articles/tools-for-experimenters.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/authors.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/index.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/news/index.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/compare_waic.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/compute_waic.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/cpp_exnex_gibbs.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/dot-extract_event_vector.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/dot-extract_time_vector.html</loc></url>
@@ -19,9 +23,15 @@
 <url><loc>https://victorney.github.io/exnexSurv/reference/exnex_surv.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/exnex_surv_bridge.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/index.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/median_survival.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/new_exnex_surv.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/plot.exnex_surv.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/plot.survival_exnex.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/print.exnex_surv.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/probability_superiority.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/rmst.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/simulate_data.html</loc></url>
 <url><loc>https://victorney.github.io/exnexSurv/reference/summary.exnex_surv.html</loc></url>
+<url><loc>https://victorney.github.io/exnexSurv/reference/survival_curves.html</loc></url>
 </urlset>
 

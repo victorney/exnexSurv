@@ -1,0 +1,83 @@
+# Simulate basket-trial log-normal survival data
+
+Generates a synthetic dataset from the log-normal AFT model used by
+\`exnexSurv\`: \$\$\log T_i = \theta\_{g\[i\]} + X_i^\top\beta +
+\varepsilon,\qquad \varepsilon\sim\mathcal N(0,\sigma^2).\$\$ Healthy
+baskets draw their location from a common baseline plus random noise;
+"outlier" baskets (specified via \`outlier_baskets\`) have their
+location shifted by \`resist_delta\`. The function is useful for
+simulation studies and teaching examples.
+
+## Usage
+
+``` r
+simulate_data(
+  n = 30,
+  K = 9,
+  beta = c(0.5, -0.2),
+  sigma = 1.2,
+  outlier_baskets = NULL,
+  resist_delta = -0.8,
+  censoring_rate = NULL,
+  censor_upper = NULL,
+  theta = 0,
+  seed = NULL
+)
+```
+
+## Arguments
+
+- n:
+
+  Number of patients per basket. A scalar is replicated across all \`K\`
+  baskets; a numeric vector of length \`K\` assigns a size to each
+  basket individually.
+
+- K:
+
+  Number of baskets (default \`9\`).
+
+- beta:
+
+  Numeric vector of regression coefficients for the covariates. Length
+  determines the number of covariates.
+
+- sigma:
+
+  Residual standard deviation (default \`1.2\`).
+
+- outlier_baskets:
+
+  Optional integer vector of basket indices (1 to K) whose true location
+  is shifted away from the healthy population. These are the baskets the
+  EXNEX model is designed to detect.
+
+- resist_delta:
+
+  Additive shift applied to the \`theta\` of outlier baskets (default
+  \`-0.8\`).
+
+- censoring_rate:
+
+  Approximate proportion of censoring after \`censor_upper\`; if
+  \`NULL\`, no censoring is applied.
+
+- censor_upper:
+
+  Upper bound of the censoring-time uniform distribution.
+
+- theta:
+
+  Baseline location for the healthy (non-outlier) baskets; a scalar used
+  as the centre around which the healthy basket locations vary.
+
+- seed:
+
+  Optional seed for reproducibility.
+
+## Value
+
+A \`data.frame\` with columns \`time\`, \`event\`, \`group\` (a factor),
+and one covariate column (\`x1\`, ...) per entry in \`beta\`. True
+parameter values are stored as attributes \`true_theta\`, \`true_beta\`,
+and \`true_sigma\`.

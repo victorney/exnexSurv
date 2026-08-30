@@ -16,9 +16,11 @@ The statistical model, priors, data augmentation, and the sampler.
 
 ### Practical guides
 
-MCMC stability checks and running chains in parallel.
+MCMC stability checks, running chains in parallel, and inference tools.
 
 - [Convergence and
   Diagnostics](https://victorney.github.io/exnexSurv/articles/convergence-and-diagnostics.md):
 - [Running Chains in
   Parallel](https://victorney.github.io/exnexSurv/articles/parallel-chains.md):
+- [Tools for
+  Experimenters](https://victorney.github.io/exnexSurv/articles/tools-for-experimenters.md):

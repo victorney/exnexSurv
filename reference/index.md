@@ -7,6 +7,27 @@ Fit an EXNEX survival model to right-censored data.
 - [`exnex_surv()`](https://victorney.github.io/exnexSurv/reference/exnex_surv.md)
   : Fit Bayesian EXNEX Survival Models
 
+## Inference and model selection
+
+Posterior summaries, survival curves, model comparison and simulation.
+
+- [`survival_curves()`](https://victorney.github.io/exnexSurv/reference/survival_curves.md)
+  : Survival curves from an exnex_surv fit
+- [`plot(`*`<survival_exnex>`*`)`](https://victorney.github.io/exnexSurv/reference/plot.survival_exnex.md)
+  : Plot survival curves from an exnex_surv fit
+- [`median_survival()`](https://victorney.github.io/exnexSurv/reference/median_survival.md)
+  : Posterior median survival time
+- [`rmst()`](https://victorney.github.io/exnexSurv/reference/rmst.md) :
+  Restricted mean survival time (RMST) from an exnex_surv fit
+- [`compute_waic()`](https://victorney.github.io/exnexSurv/reference/compute_waic.md)
+  : Pointwise log-likelihood and WAIC from an exnex_surv fit
+- [`compare_waic()`](https://victorney.github.io/exnexSurv/reference/compare_waic.md)
+  : Compare multiple exnex_surv fits by WAIC
+- [`probability_superiority()`](https://victorney.github.io/exnexSurv/reference/probability_superiority.md)
+  : Posterior probability that one group beats another
+- [`simulate_data()`](https://victorney.github.io/exnexSurv/reference/simulate_data.md)
+  : Simulate basket-trial log-normal survival data
+
 ## Methods for fitted objects
 
 Summarise, print, and plot fitted `exnex_surv` objects.
