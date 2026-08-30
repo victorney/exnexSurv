@@ -2,11 +2,11 @@
 % Please edit documentation in R/exnex_surv_bridge.R
 \name{.make_chain_seeds}
 \alias{.make_chain_seeds}
-\title{Derive one deterministic seed per chain}
+\title{Derive one deterministic seed per chain (restores the global RNG state)}
 \usage{
 .make_chain_seeds(chains, seed = NULL)
 }
 \description{
-Derive one deterministic seed per chain
+Derive one deterministic seed per chain (restores the global RNG state)
 }
 \keyword{internal}

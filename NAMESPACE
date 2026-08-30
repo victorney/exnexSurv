@@ -16,7 +16,9 @@ export(rmst)
 export(simulate_data)
 export(survival_curves)
 importFrom(Rcpp,evalCpp)
-importFrom(stats,pnorm)
-importFrom(stats,rnorm)
-importFrom(stats,runif)
+importFrom(stats,
+  pnorm,
+  rnorm,
+  runif
+)
 useDynLib(exnexSurv, .registration = TRUE)
