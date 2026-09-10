@@ -12,6 +12,7 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
     group = c(1, 2, 1),
     X = matrix(nrow = 3, ncol = 0),
     priors = list(alpha = 1),
+    pooling = "exnex",
     iter = 6,
     warmup = 2,
     chains = 1
@@ -24,6 +25,7 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
     group = c(1, 2, 1),
     X = matrix(nrow = 3, ncol = 0),
     priors = list(alpha = 1),
+    pooling = "exnex",
     iter = 6,
     warmup = 2,
     chains = 1
@@ -55,6 +57,7 @@ test_that("cpp_exnex_gibbs validates input edge cases", {
     group = c(1, 2, 1),
     X = matrix(c(60, 55, 62), ncol = 1),
     priors = list(),
+    pooling = "exnex",
     iter = 4,
     warmup = 2,
     chains = 1

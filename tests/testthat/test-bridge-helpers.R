@@ -45,7 +45,7 @@ test_that("bridge helpers validate malformed outcomes", {
   )
 })
 
-test_that("new_exnex_surv enforces structural invariants", {
+test_that("new_pooling_surv enforces structural invariants", {
   data <- list(
     time = c(5, 8, 12),
     event = c(1, 0, 1),
@@ -63,7 +63,7 @@ test_that("new_exnex_surv enforces structural invariants", {
     sigma2 = c(1.1, 0.9)
   )
 
-  fit <- exnex_surv(
+  fit <- pooling_surv(
     survival::Surv(time, event) ~ group + age,
     data = trial_data_local,
     priors = list(alpha = 1),
@@ -73,9 +73,10 @@ test_that("new_exnex_surv enforces structural invariants", {
     seed = 2719
   )
 
-  rebuilt <- exnexSurv:::new_exnex_surv(
+  rebuilt <- exnexSurv:::new_pooling_surv(
     draws = draws,
     data = data,
+    pooling = "exnex",
     priors = list(alpha = 1),
     iter = 4,
     warmup = 2,
@@ -83,14 +84,15 @@ test_that("new_exnex_surv enforces structural invariants", {
     blueprint = fit$blueprint
   )
 
-  expect_s3_class(rebuilt, "exnex_surv")
+  expect_s3_class(rebuilt, "pooling_surv")
   expect_identical(rebuilt$draws, draws)
   expect_identical(rebuilt$data$cov_names, "age")
 
   expect_error_message(
-    exnexSurv:::new_exnex_surv(
+    exnexSurv:::new_pooling_surv(
       draws = draws[1, , drop = FALSE],
       data = data,
+      pooling = "exnex",
       priors = list(),
       iter = 4,
       warmup = 2,
@@ -101,9 +103,10 @@ test_that("new_exnex_surv enforces structural invariants", {
   )
 
   expect_error_message(
-    exnexSurv:::new_exnex_surv(
+    exnexSurv:::new_pooling_surv(
       draws = draws[, 1:3],
       data = data,
+      pooling = "exnex",
       priors = list(),
       iter = 4,
       warmup = 2,
@@ -116,7 +119,7 @@ test_that("new_exnex_surv enforces structural invariants", {
 
 test_that("public wrappers keep rejecting invalid structural inputs", {
   expect_error_message(
-    exnex_surv(
+    pooling_surv(
       survival::Surv(time, event) ~ group,
       data = transform(trial_data_local, time = c(5, -8, 12, 9)),
       priors = list(),
@@ -128,7 +131,7 @@ test_that("public wrappers keep rejecting invalid structural inputs", {
 
   expect_error(
     suppressWarnings(
-      exnex_surv(
+      pooling_surv(
         survival::Surv(time, event) ~ group,
         data = transform(trial_data_local, event = c(1, 0, 2, 1)),
         priors = list(),
@@ -139,7 +142,7 @@ test_that("public wrappers keep rejecting invalid structural inputs", {
   )
 
   expect_error_message(
-    exnex_surv(
+    pooling_surv(
       x = trial_data_local[c("group", "age")],
       y = survival::Surv(trial_data_local$time, trial_data_local$event),
       priors = list(),

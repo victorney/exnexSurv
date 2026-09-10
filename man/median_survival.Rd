@@ -7,7 +7,7 @@
 median_survival(fit, newdata = NULL, level = 0.95, ...)
 }
 \arguments{
-\item{fit}{A fitted `exnex_surv` object.}
+\item{fit}{A fitted `pooling_surv` object.}
 
 \item{newdata}{Optional data frame (one row gives one median).}
 

@@ -1,7 +1,7 @@
-#' Pointwise log-likelihood and WAIC from an exnex_surv fit
+#' Pointwise log-likelihood and WAIC from an pooling_surv fit
 #'
 #' Computes the Watanabe-Akaike Information Criterion (WAIC) for a fitted
-#' `exnex_surv` model. WAIC is a fully Bayesian information criterion that uses
+#' `pooling_surv` model. WAIC is a fully Bayesian information criterion that uses
 #' the posterior draws of the log-likelihood and adds a penalty for effective
 #' number of parameters \eqn{p_{waic}}.
 #'
@@ -24,7 +24,7 @@
 #' Rows with extreme leverage (`p_waic` above a large threshold) may flag issues;
 #' the function returns a `pointwise` matrix so users can investigate.
 #'
-#' @param fit A fitted `exnex_surv` object.
+#' @param fit A fitted `pooling_surv` object.
 #' @param ... Unused.
 #'
 #' @return A named list with elements `waic`, `se_elpd_waic`, `lpd`, `p_waic`,
@@ -32,7 +32,7 @@
 #'   `p_waic`, `waic`).
 #' @export
 compute_waic <- function(fit, ...) {
-  checkmate::assert_class(fit, "exnex_surv")
+  checkmate::assert_class(fit, "pooling_surv")
 
   draws <- fit$draws
   data <- fit$data
@@ -103,12 +103,12 @@ compute_waic <- function(fit, ...) {
   )
 }
 
-#' Compare multiple exnex_surv fits by WAIC
+#' Compare multiple pooling_surv fits by WAIC
 #'
 #' Computes [compute_waic()] for each supplied fit and reports them in a
 #' single `data.frame`, sorted by ascending WAIC.
 #'
-#' @param ... Two or more fitted `exnex_surv` objects.
+#' @param ... Two or more fitted `pooling_surv` objects.
 #' @param digit Number of decimal places for the reported statistics.
 #'
 #' @return A `data.frame` with one row per model and columns `model`, `waic`,
@@ -119,7 +119,7 @@ compare_waic <- function(..., digit = 2) {
   if (length(fits) < 2) {
     stop("`compare_waic()` requires at least two fits.", call. = FALSE)
   }
-  for (f in fits) checkmate::assert_class(f, "exnex_surv")
+  for (f in fits) checkmate::assert_class(f, "pooling_surv")
 
   fit_names <- names(fits)
   if (is.null(fit_names)) fit_names <- paste0("fit", seq_along(fits))

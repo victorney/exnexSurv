@@ -83,7 +83,7 @@ mean(sim_data$event)
 ## Fit multiple chains
 
 ```{r}
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 3000,
@@ -172,7 +172,7 @@ Lower autocorrelation and higher effective sample size are usually preferable.
 
 ```{r}
 fit_seeds <- lapply(c(6841, 7313, 8129), function(seed) {
-  exnex_surv(
+  pooling_surv(
     Surv(time, event) ~ group + age_std,
     data = sim_data,
     iter = 3000,

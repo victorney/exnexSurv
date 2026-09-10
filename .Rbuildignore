@@ -13,3 +13,4 @@
 ^_.*\.R$
 ^_pkgdown\.yml$
 ^pkgdown$
+^\.posit/assistant$

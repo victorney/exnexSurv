@@ -2,12 +2,12 @@
 % Please edit documentation in R/waic.R
 \name{compare_waic}
 \alias{compare_waic}
-\title{Compare multiple exnex_surv fits by WAIC}
+\title{Compare multiple pooling_surv fits by WAIC}
 \usage{
 compare_waic(..., digit = 2)
 }
 \arguments{
-\item{...}{Two or more fitted `exnex_surv` objects.}
+\item{...}{Two or more fitted `pooling_surv` objects.}
 
 \item{digit}{Number of decimal places for the reported statistics.}
 }

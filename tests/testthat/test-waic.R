@@ -4,11 +4,11 @@ set.seed(202)
 sim <- simulate_data(n = 15, beta = c(0.4), sigma = 1.0,
                      censoring_rate = 0.3, seed = 8)
 
-fit_full <- exnexSurv::exnex_surv(
+fit_full <- exnexSurv::pooling_surv(
   survival::Surv(time, event) ~ group + x1,
   data = sim, iter = 200, warmup = 100, chains = 1, seed = 1
 )
-fit_group_only <- exnexSurv::exnex_surv(
+fit_group_only <- exnexSurv::pooling_surv(
   survival::Surv(time, event) ~ group,
   data = sim[, c("time", "event", "group")],
   iter = 200, warmup = 100, chains = 1, seed = 1

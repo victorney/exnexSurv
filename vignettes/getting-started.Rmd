@@ -18,7 +18,9 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-`exnexSurv` fits Bayesian EXNEX survival models for right-censored log-normal data.
+`exnexSurv` fits Bayesian pooling models for right-censored log-normal data: the EXNEX
+hierarchy (`pooling = "exnex"`, the default), complete pooling (`pooling = "complete"`), and
+no pooling (`pooling = "none"`). See the *Model and Methods* vignette for details.
 The current interface supports:
 
 - a formula interface,
@@ -81,7 +83,7 @@ mean(sim_data$event)
 ## Fit the model with a formula
 
 ```{r}
-fit_formula <- exnex_surv(
+fit_formula <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 1200,
@@ -100,7 +102,7 @@ You can inspect the model structure with the usual S3 methods.
 ## Run multiple chains in parallel
 
 ```{r}
-fit_parallel <- exnex_surv(
+fit_parallel <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 1200,
@@ -136,7 +138,7 @@ plot(
 ## Fit the model with `x` and `y`
 
 ```{r}
-fit_xy <- exnex_surv(
+fit_xy <- pooling_surv(
   x = sim_data[c("group", "age_std")],
   y = Surv(sim_data$time, sim_data$event),
   iter = 1200,
@@ -156,7 +158,7 @@ This is useful if predictors and outcomes are prepared separately.
 If the model only contains the subgroup variable, no `beta` terms are estimated.
 
 ```{r}
-fit_no_cov <- exnex_surv(
+fit_no_cov <- pooling_surv(
   Surv(time, event) ~ group,
   data = sim_data,
   iter = 1200,

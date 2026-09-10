@@ -4,7 +4,7 @@ set.seed(303)
 sim <- simulate_data(n = 20, beta = c(0.5), sigma = 1.1,
                      outlier_baskets = c(2, 8), resist_delta = -1.0,
                      censoring_rate = 0.3, seed = 12)
-fit <- exnexSurv::exnex_surv(
+fit <- exnexSurv::pooling_surv(
   survival::Surv(time, event) ~ group + x1,
   data = sim, iter = 300, warmup = 150, chains = 1, seed = 2
 )

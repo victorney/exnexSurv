@@ -1,3 +1,35 @@
+# exnexSurv 1.4.0
+
+## New features
+
+* `pooling_surv()` is the new general entry point for fitting Bayesian
+  pooling models for right-censored log-normal survival data. It runs the
+  same data-augmented Gibbs sampler under three pooling modes, selected
+  with the new `pooling` argument:
+  * `pooling = "exnex"` — the EXNEX hierarchy (default, as in previous
+    releases);
+  * `pooling = "complete"` — a single shared basket effect with prior
+    `N(m_mu, v_mu)` (complete pooling);
+  * `pooling = "none"` — independent basket effects with priors
+    `N(m_nex_j, v_nex_j)` (no pooling).
+
+## Deprecation (soft)
+
+* `exnex_surv()` is deprecated in favour of `pooling_surv()`; it now emits
+  a one-line deprecation message and forces `pooling = "exnex"`. All
+  existing calls continue to work.
+* Fitted objects are of class `"pooling_surv"`; all methods
+  (`summary()`, `print()`, `plot()`, `survival_curves()`,
+  `median_survival()`, `rmst()`, `probability_superiority()`,
+  `compute_waic()`, `compare_waic()`) accept them.
+
+## Other
+
+* Priors that are irrelevant for the chosen `pooling` mode (e.g. `p_mix`
+  under `"complete"` or `"none"`) now trigger a warning naming the ignored
+  fields.
+* `print()` output now labels the fitted pooling variant.
+
 # exnexSurv 1.3.1
 
 ## Breaking changes

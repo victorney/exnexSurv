@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // cpp_exnex_gibbs
-Rcpp::List cpp_exnex_gibbs(const arma::vec& time, const arma::vec& event, const arma::vec& group, const arma::mat& X, Rcpp::List priors, const int& iter, const int& warmup, const int& chains);
-RcppExport SEXP _exnexSurv_cpp_exnex_gibbs(SEXP timeSEXP, SEXP eventSEXP, SEXP groupSEXP, SEXP XSEXP, SEXP priorsSEXP, SEXP iterSEXP, SEXP warmupSEXP, SEXP chainsSEXP) {
+Rcpp::List cpp_exnex_gibbs(const arma::vec& time, const arma::vec& event, const arma::vec& group, const arma::mat& X, Rcpp::List priors, const std::string& pooling, const int& iter, const int& warmup, const int& chains);
+RcppExport SEXP _exnexSurv_cpp_exnex_gibbs(SEXP timeSEXP, SEXP eventSEXP, SEXP groupSEXP, SEXP XSEXP, SEXP priorsSEXP, SEXP poolingSEXP, SEXP iterSEXP, SEXP warmupSEXP, SEXP chainsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,16 +22,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type group(groupSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type priors(priorsSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type pooling(poolingSEXP);
     Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< const int& >::type warmup(warmupSEXP);
     Rcpp::traits::input_parameter< const int& >::type chains(chainsSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains));
+    rcpp_result_gen = Rcpp::wrap(cpp_exnex_gibbs(time, event, group, X, priors, pooling, iter, warmup, chains));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_exnexSurv_cpp_exnex_gibbs", (DL_FUNC) &_exnexSurv_cpp_exnex_gibbs, 8},
+    {"_exnexSurv_cpp_exnex_gibbs", (DL_FUNC) &_exnexSurv_cpp_exnex_gibbs, 9},
     {NULL, NULL, 0}
 };
 

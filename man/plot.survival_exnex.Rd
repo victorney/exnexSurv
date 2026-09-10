@@ -2,7 +2,7 @@
 % Please edit documentation in R/survival.R
 \name{plot.survival_exnex}
 \alias{plot.survival_exnex}
-\title{Plot survival curves from an exnex_surv fit}
+\title{Plot survival curves from an pooling_surv fit}
 \usage{
 \method{plot}{survival_exnex}(x, ...)
 }

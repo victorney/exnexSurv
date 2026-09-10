@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 Beyond fitting, `exnexSurv` provides a small set of inference and
 model-selection utilities that operate directly on the posterior draws already
-stored in a fitted `exnex_surv` object. This vignette walks through each of
+stored in a fitted `pooling_surv` object. This vignette walks through each of
 them using a small simulated example.
 
 ## A quick simulated example
@@ -59,7 +59,7 @@ Now fit the model. We keep the chain short so the vignette builds quickly; for
 real work use more iterations and multiple chains.
 
 ```{r}
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group + x1,
   data = d,
   iter = 2000,
@@ -131,7 +131,7 @@ str(w[c("waic", "se_elpd_waic", "lpd", "p_waic", "elpd_waic")])
 model) and returns them ordered by ascending WAIC:
 
 ```{r}
-fit_group <- exnex_surv(
+fit_group <- pooling_surv(
   Surv(time, event) ~ group,
   data = d,
   iter = 2000, warmup = 1000, chains = 2, seed = 7

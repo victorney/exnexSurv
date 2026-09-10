@@ -8,9 +8,10 @@ template:
 home:
   title: "exnexSurv"
   description: >-
-    Bayesian Exchangeable-Non-Exchangeable (EXNEX) survival models for
+    Bayesian pooling models (EXNEX, complete pooling, no pooling) for
     right-censored log-normal data in basket trials, fitted with a fast
     data-augmented Gibbs sampler (Rcpp/RcppArmadillo).
+    `pooling_surv()` with `pooling = "exnex"`, `"complete"`, or `"none"`.
 
 navbar:
   structure:
@@ -24,8 +25,9 @@ navbar:
 
 reference:
   - title: "Fitting"
-    desc: "Fit an EXNEX survival model to right-censored data."
+    desc: "Fit a Bayesian pooling survival model: EXNEX (`pooling = \"exnex\"`), complete pooling (`\"complete\"`), or no pooling (`\"none\"`)."
     contents:
+      - pooling_surv
       - exnex_surv
   - title: "Inference and model selection"
     desc: "Posterior summaries, survival curves, model comparison and simulation."
@@ -39,22 +41,22 @@ reference:
       - probability_superiority
       - simulate_data
   - title: "Methods for fitted objects"
-    desc: "Summarise, print, and plot fitted `exnex_surv` objects."
+    desc: "Summarise, print, and plot fitted `pooling_surv` objects."
     contents:
-      - summary.exnex_surv
-      - print.exnex_surv
-      - plot.exnex_surv
+      - summary.pooling_surv
+      - print.pooling_surv
+      - plot.pooling_surv
   - title: "Internal functions"
     desc: "These functions are internal and not exported; use with caution."
     contents:
       - cpp_exnex_gibbs
-      - exnex_surv_bridge
-      - new_exnex_surv
+      - pooling_surv_bridge
+      - new_pooling_surv
       - .extract_event_vector
       - .extract_time_vector
       - .make_chain_seeds
-      - .run_chains_parallel_exnex
-      - .run_single_chain_exnex
+      - .run_chains_parallel_pooling
+      - .run_single_chain_pooling
 
 articles:
   - title: "Start here"

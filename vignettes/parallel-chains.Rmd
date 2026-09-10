@@ -80,7 +80,7 @@ sim_data <- simulate_surv_data(
 ## Fit two chains in parallel
 
 ```{r}
-fit_parallel <- exnex_surv(
+fit_parallel <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 60,
@@ -99,7 +99,7 @@ If you used `iter = 60` and `warmup = 20` with `chains = 2`, the posterior sampl
 ## Fit more chains than workers
 
 ```{r}
-fit_four_chains <- exnex_surv(
+fit_four_chains <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 60,
@@ -129,7 +129,7 @@ Each parameter panel shows all chains together, which makes it easier to compare
 ## Compare to sequential execution
 
 ```{r}
-fit_sequential <- exnex_surv(
+fit_sequential <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 60,

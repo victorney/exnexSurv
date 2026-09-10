@@ -16,7 +16,7 @@ probability_superiority(
 )
 }
 \arguments{
-\item{fit}{A fitted `exnex_surv` object.}
+\item{fit}{A fitted `pooling_surv` object.}
 
 \item{a}{An integer index (or group label) of the first group.}
 
