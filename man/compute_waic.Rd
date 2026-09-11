@@ -2,12 +2,12 @@
 % Please edit documentation in R/waic.R
 \name{compute_waic}
 \alias{compute_waic}
-\title{Pointwise log-likelihood and WAIC from an exnex_surv fit}
+\title{Pointwise log-likelihood and WAIC from an pooling_surv fit}
 \usage{
 compute_waic(fit, ...)
 }
 \arguments{
-\item{fit}{A fitted `exnex_surv` object.}
+\item{fit}{A fitted `pooling_surv` object.}
 
 \item{...}{Unused.}
 }
@@ -18,7 +18,7 @@ A named list with elements `waic`, `se_elpd_waic`, `lpd`, `p_waic`,
 }
 \description{
 Computes the Watanabe-Akaike Information Criterion (WAIC) for a fitted
-`exnex_surv` model. WAIC is a fully Bayesian information criterion that uses
+`pooling_surv` model. WAIC is a fully Bayesian information criterion that uses
 the posterior draws of the log-likelihood and adds a penalty for effective
 number of parameters \eqn{p_{waic}}.
 }

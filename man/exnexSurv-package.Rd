@@ -6,9 +6,11 @@
 \alias{exnexSurv-package}
 \title{exnexSurv: Bayesian EXNEX Models for Survival Analysis in Basket Trials}
 \description{
-Fits Bayesian Exchangeable--Non-Exchangeable (EXNEX) survival models for
-right-censored log-normal data in basket trials using a fast,
-data-augmented Gibbs sampler written in C++ (Rcpp/RcppArmadillo).
+Fits Bayesian pooling models for right-censored log-normal data in basket
+trials using a fast, data-augmented Gibbs sampler written in C++
+(Rcpp/RcppArmadillo): the EXNEX hierarchy (`pooling = "exnex"`),
+complete pooling (`pooling = "complete"`), and no pooling
+(`pooling = "none"`).
 
 For patient \eqn{i}, \eqn{\log T_i=\theta_{g[i]}+X_i^{\mathsf T}\beta+
 \varepsilon_i} with \eqn{\varepsilon_i\sim\mathcal N(0,\sigma^2)}. A
@@ -19,7 +21,7 @@ prior \eqn{\mathcal N(m_{0j},v_{0j})}. Censored event times are handled by
 data augmentation (imputing truncated-Normal latent log-times), which makes
 every full conditional conjugate and the systematic Gibbs scan exact.
 
-The main entry point is \code{\link{exnex_surv}()}. See the package
+The main entry point is \code{\link{pooling_surv}()}. See the package
 vignette \emph{The EXNEX Model, Priors, and Data Augmentation} for a full
 presentation of the model, the priors, and the sampler.
 }
@@ -33,8 +35,8 @@ distributions by data augmentation. \emph{Journal of the American
 Statistical Association}, 82(398), 528--540.
 }
 \seealso{
-\code{\link{exnex_surv}}, \code{\link{summary.exnex_surv}},
-  \code{\link{print.exnex_surv}}, \code{\link{plot.exnex_surv}}
+\code{\link{pooling_surv}}, \code{\link{summary.pooling_surv}},
+  \code{\link{print.pooling_surv}}, \code{\link{plot.pooling_surv}}
 }
 \author{
 \strong{Maintainer}: Victor Ney \email{victorney@ime.usp.br}

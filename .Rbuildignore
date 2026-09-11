@@ -13,4 +13,7 @@
 ^_.*\.R$
 ^_pkgdown\.yml$
 ^pkgdown$
-^CRAN-SUBMISSION$
+^\.posit/assistant$
+demo-exnexSurv\.R
+demo-exnexSurv-tools\.R
+Rplots\.pdf

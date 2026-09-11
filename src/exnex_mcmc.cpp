@@ -88,17 +88,36 @@ arma::vec draw_normal_from_precision(const arma::mat& precision, const arma::vec
 //'   basket-specific notation \eqn{p_{\mathrm{exch},j}}, \eqn{m_{0j}},
 //'   \eqn{v_{0j}} of the model. Absent fields keep the defaults; unknown
 //'   fields are ignored.
+//' @param pooling Pooling mode: one of \code{"exnex"} (EXNEX hierarchy with
+//'   mixture indicators \eqn{Z_j}, exchangeable center \eqn{\mu} and
+//'   between-basket variance \eqn{\tau^2}), \code{"complete"} (a single shared
+//'   basket effect with prior \eqn{\mathcal N(m_{\mu}, v_{\mu})}; the
+//'   EXNEX-specific priors are ignored) or \code{"none"} (independent basket
+//'   effects with priors \eqn{\mathcal N(m_{0j}, v_{0j})}; the EXNEX-specific
+//'   priors are ignored).
+//' @param verbose If \code{TRUE}, report chain progress every 10\% of the
+//'   iterations on the standard output (or through \code{progress_hook});
+//'   silence with \code{verbose = FALSE}. Default \code{TRUE}.
 //' @param iter Total number of MCMC iterations
 //' @param warmup Number of iterations to discard
 //' @param chains Number of independent chains to run
+//' @param chain_label Optional label (e.g. the chain number) shown in the
+//'   progress lines; empty string omits it.
+//' @param progress_hook Optional R function called with one argument
+//'   (the progress line) at every 10\% milestone instead of printing to the
+//'   standard output; used by the parallel runner to relay progress to the
+//'   master session.
 //'
 //' @return List containing posterior draws, priors, metadata, and diagnostics
 //' @keywords internal
 // [[Rcpp::export]]
 Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
                            const arma::vec &group, const arma::mat &X,
-                           Rcpp::List priors, const int &iter,
-                           const int &warmup, const int &chains) {
+                           Rcpp::List priors, const std::string &pooling,
+                           const bool verbose,
+                           const int &iter, const int &warmup,
+                           const int &chains, const std::string &chain_label,
+                           Rcpp::Nullable<Rcpp::Function> progress_hook = R_NilValue) {
   Rcpp::RNGScope scope;
 
   double a_sigma = 2.0;
@@ -112,6 +131,10 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
   double v_nex = 1e4;
   double v_beta = 1e4;
   double init_censor_offset = 0.1;
+
+  if (pooling != "exnex" && pooling != "complete" && pooling != "none") {
+    Rcpp::stop("pooling must be one of 'exnex', 'complete', 'none'.");
+  }
 
   // Track whether the basket-specific priors were supplied as vectors so that
   // the resolved-priors report preserves the user's input shape.
@@ -325,7 +348,43 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     beta_prior_precision = arma::eye(P, P) / v_beta;
   }
 
+  // Progress reporting: printed to the standard output once per 10% of the
+  // total iterations. Stdout (unlike raw messages) is visible on the master
+  // console even when this runs on a parallel PSOCK worker.
+  std::vector<int> milestones;
+  // milestones fire when verbose printing is on OR a progress hook is
+  // provided (the parallel runner suppresses verbose and relays via hook)
+  if ((verbose || progress_hook.isNotNull()) && iter >= 10) {
+    for (int step = 1; step <= 10; ++step) {
+      milestones.push_back(step * iter / 10);
+    }
+  }
+  size_t milestone_idx = 0;
+  std::string progress_prefix = "[exnexSurv pooling=" + pooling + "]";
+  if (!chain_label.empty()) {
+    progress_prefix = "[exnexSurv chain " + chain_label + " pooling=" + pooling + "]";
+  }
+
   for (int iter_idx = 0; iter_idx < iter; ++iter_idx) {
+    if (milestone_idx < milestones.size() &&
+        (iter_idx + 1) == static_cast<unsigned int>(milestones[milestone_idx])) {
+      std::string line = progress_prefix + " iteration " +
+        std::to_string(iter_idx + 1) + "/" + std::to_string(iter) +
+        " (" + std::to_string(10 * (milestone_idx + 1)) + "%)";
+      if (progress_hook.isNotNull()) {
+        Rcpp::Function hook(progress_hook);
+        // Flush the in-memory RNG state to .Random.seed before signalling so
+        // R-side code (the hook, and progress/message relaying) sees the true
+        // state and can restore it; re-read it afterwards so the sampler
+        // continues from exactly the same stream as if nothing was signalled.
+        PutRNGstate();
+        hook(line);
+        GetRNGstate();
+      } else {
+        Rprintf("%s\n", line.c_str());
+      }
+      ++milestone_idx;
+    }
     // Current linear predictor from fixed effects.
     arma::vec xb = arma::zeros<arma::vec>(n);
     if (P > 0) {
@@ -364,22 +423,42 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     // Sum residual contributions within each subgroup.
     arma::vec sum_R = group_map.t() * subgroup_resid;
 
-    for (int j = 0; j < K; ++j) {
-      double prior_mean = m_nex_vec(j);
-      double prior_var = v_nex_vec(j);
-
-      if (z(j) == 1) {
-        prior_mean = mu;
-        prior_var = tau2;
-      }
-
-      double precision = group_counts(j) / sigma2 + 1.0 / prior_var;
+    if (pooling == "complete") {
+      // One shared basket effect with prior N(m_mu, v_mu): the conjugate
+      // update uses the pooled residuals of all observations.
+      double precision = static_cast<double>(n) / sigma2 + 1.0 / v_mu;
       double variance = 1.0 / precision;
-      double mean = variance * (sum_R(j) / sigma2 + prior_mean / prior_var);
-      theta(j) = R::rnorm(mean, std::sqrt(variance));
+      double mean = variance * (arma::accu(subgroup_resid) / sigma2 + m_mu / v_mu);
+      theta = arma::vec(K, arma::fill::none);
+      theta.fill(R::rnorm(mean, std::sqrt(variance)));
+    } else if (pooling == "none") {
+      // Independent basket effects with priors N(m_nex_j, v_nex_j): no
+      // exchangeable structure, no mixture indicators.
+      for (int j = 0; j < K; ++j) {
+        double precision = group_counts(j) / sigma2 + 1.0 / v_nex_vec(j);
+        double variance = 1.0 / precision;
+        double mean = variance * (sum_R(j) / sigma2 + m_nex_vec(j) / v_nex_vec(j));
+        theta(j) = R::rnorm(mean, std::sqrt(variance));
+      }
+    } else {
+      for (int j = 0; j < K; ++j) {
+        double prior_mean = m_nex_vec(j);
+        double prior_var = v_nex_vec(j);
+
+        if (z(j) == 1) {
+          prior_mean = mu;
+          prior_var = tau2;
+        }
+
+        double precision = group_counts(j) / sigma2 + 1.0 / prior_var;
+        double variance = 1.0 / precision;
+        double mean = variance * (sum_R(j) / sigma2 + prior_mean / prior_var);
+        theta(j) = R::rnorm(mean, std::sqrt(variance));
+      }
     }
 
-    for (int j = 0; j < K; ++j) {
+    if (pooling == "exnex") {
+      for (int j = 0; j < K; ++j) {
       // Compute EX/NEX weights on the log scale for stability.
       double log_w1 = std::log(p_mix_vec(j)) + R::dnorm4(theta(j), mu, std::sqrt(tau2), 1);
       double log_w0 = std::log1p(-p_mix_vec(j)) + R::dnorm4(theta(j), m_nex_vec(j), std::sqrt(v_nex_vec(j)), 1);
@@ -391,7 +470,9 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
 
       z(j) = R::runif(0.0, 1.0) < prob_ex ? 1 : 0;
     }
+    }
 
+    if (pooling == "exnex") {
     arma::vec z_vec = arma::conv_to<arma::vec>::from(z);
 
     // Hyperparameter updates only use the exchangeable groups.
@@ -406,6 +487,7 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     double shape_tau = a_tau + 0.5 * k_exchangeable;
     double rate_tau = b_tau + 0.5 * arma::dot(z_vec, arma::square(theta - mu));
     tau2 = draw_inverse_gamma(shape_tau, rate_tau);
+    }
 
     if (iter_idx >= warmup) {
       // Save only post-warmup draws.
@@ -471,6 +553,7 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     Rcpp::Named("n_covariates") = P,
     Rcpp::Named("n_censored") = arma::sum(1 - event),
     Rcpp::Named("n_observed") = arma::sum(event),
+    Rcpp::Named("pooling") = pooling,
     Rcpp::Named("resolved_priors") = resolved_priors
   );
 

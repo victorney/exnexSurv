@@ -2,12 +2,12 @@
 % Please edit documentation in R/survival.R
 \name{survival_curves}
 \alias{survival_curves}
-\title{Survival curves from an exnex_surv fit}
+\title{Survival curves from an pooling_surv fit}
 \usage{
 survival_curves(fit, newdata = NULL, times = NULL, level = 0.95, ...)
 }
 \arguments{
-\item{fit}{A fitted `exnex_surv` object.}
+\item{fit}{A fitted `pooling_surv` object.}
 
 \item{newdata}{Optional data frame with columns matching the covariates of
 the model. If it contains a `group` column, that is used for the group
@@ -27,7 +27,7 @@ An object of class `survival_exnex` (also a `data.frame`) with long
 }
 \description{
 Computes posterior survival curves \eqn{S(t) = \Pr(T > t)} from a fitted
-`exnex_surv` model for a log-normal AFT specification:
+`pooling_surv` model for a log-normal AFT specification:
 \deqn{\log T_i = \theta_{g[i]} + X_i^\top\beta + \varepsilon,\qquad
   \varepsilon\sim\mathcal N(0,\sigma^2).}
 For a fixed time \eqn{t} and linear predictor \eqn{\eta}, the survival

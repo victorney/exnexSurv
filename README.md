@@ -4,13 +4,15 @@
 [![R-CMD-check](https://github.com/victorney/exnexSurv/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/victorney/exnexSurv/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-Fast Bayesian **EX**changeable–**N**on-**EX**changeable (EXNEX) survival analysis for
-basket trials via Rcpp Gibbs sampling and data augmentation.
+Fast Bayesian logistic-pooling survival analysis for basket trials via Rcpp Gibbs
+sampling and data augmentation. The `pooling` argument of `pooling_surv()` selects
+between the **EX**changeable–**N**on-**EX**changeable (EXNEX) hierarchy
+(`pooling = "exnex"`), complete pooling (`pooling = "complete"`), and no pooling
+(`pooling = "none"`).
 
-`exnexSurv` fits an EXNEX hierarchical model for right-censored log-normal survival data.
-Each basket's log-location effect is either drawn from a shared exchangeable component
-(borrowing strength across baskets) or from a basket-specific non-exchangeable prior,
-selected by a latent indicator. Censored event times are imputed from their
+Under the EXNEX default, each basket's log-location effect is either drawn from a shared
+exchangeable component (borrowing strength across baskets) or from a basket-specific
+non-exchangeable prior, selected by a latent indicator. Censored event times are imputed from their
 truncated-Normal conditional distribution, which makes every full conditional conjugate and
 the systematic Gibbs scan exact. The sampler is implemented in C++/RcppArmadillo and is
 roughly 25&times; faster than a marginalized Stan implementation of the same model on the 
@@ -47,10 +49,10 @@ d <- data.frame(
   x1     = x1
 )
 
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group + x1,
   data = d,
-  iter = 2000, warmup = 1000, chains = 2, parallel_chains = 2
+  iter = 2000, warmup = 1000, chains = 2, parallel_chains = TRUE
 )
 
 summary(fit)

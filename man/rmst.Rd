@@ -2,12 +2,12 @@
 % Please edit documentation in R/survival.R
 \name{rmst}
 \alias{rmst}
-\title{Restricted mean survival time (RMST) from an exnex_surv fit}
+\title{Restricted mean survival time (RMST) from an pooling_surv fit}
 \usage{
 rmst(fit, tmax = NULL, newdata = NULL, level = 0.95, grid_points = 400, ...)
 }
 \arguments{
-\item{fit}{A fitted `exnex_surv` object.}
+\item{fit}{A fitted `pooling_surv` object.}
 
 \item{tmax}{A positive scalar horizon up to which the RMST is computed.
 Defaults to `max(fit$data$time)`.}

@@ -4,16 +4,20 @@ expect_error_message <- function(expr, pattern) {
   testthat::expect_match(conditionMessage(err), pattern, fixed = TRUE)
 }
 
-base_args <- function(priors = list(), iter = 20, warmup = 10) {
+base_args <- function(priors = list(), verbose = FALSE,
+    iter = 20, warmup = 10) {
   list(
     time = c(5, 8, 12, 9, 7, 11),
     event = c(1, 0, 1, 1, 0, 1),
     group = c(1, 2, 1, 2, 1, 2),
     X = matrix(c(60, 55, 62, 58, 61, 59), ncol = 1),
     priors = priors,
+    pooling = "exnex",
+    verbose = FALSE,
     iter = iter,
     warmup = warmup,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
 }
 
@@ -172,9 +176,12 @@ test_that("vector priors pull basket effects toward their own NEX component", {
       m_nex = c(0, 0, 0),
       v_nex = c(1e4, 1e-4, 1e4)
     ),
+    pooling = "exnex",
+    verbose = FALSE,
     iter = 1000,
     warmup = 500,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
   posterior_means <- colMeans(res$draws[, 1:3])
   expect_true(abs(posterior_means[2]) < 0.3)      # pulled to 0 by NEX prior
@@ -239,28 +246,33 @@ test_that("informative nonexchangeable prior pulls basket effects toward its mea
     group = group,
     X = matrix(nrow = 60, ncol = 0),
     priors = list(p_mix = 1e-6, m_nex = 5, v_nex = 1e-4),
+    pooling = "exnex",
+    verbose = FALSE,
     iter = 1000,
     warmup = 500,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
   posterior_means <- colMeans(res$draws[, 1:3])
   expect_true(all(abs(posterior_means - 5) < 0.3))
 })
 
-test_that("exnex_surv() exposes resolved priors", {
+test_that("pooling_surv() exposes resolved priors", {
   trial_data <- data.frame(
     time = c(5, 8, 12, 9, 7, 11),
     event = c(1, 0, 1, 1, 0, 1),
     group = c(1, 2, 1, 2, 1, 2),
     age = c(60, 55, 62, 58, 61, 59)
   )
-  fit <- exnex_surv(
+  fit <- pooling_surv(
     survival::Surv(time, event) ~ group + age,
     data = trial_data,
     priors = list(p_mix = 0.7, v_nex = 10, a_tau = 3, b_tau = 3),
+    verbose = FALSE,
     iter = 20,
     warmup = 10,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
 
   resolved <- fit$resolved_priors

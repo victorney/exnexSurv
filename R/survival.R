@@ -32,10 +32,10 @@ resolve_newdata <- function(fit, newdata) {
   list(nr = nr, grp_i = grp_i, cov_rows = cov_rows, labels = labels)
 }
 
-#' Survival curves from an exnex_surv fit
+#' Survival curves from an pooling_surv fit
 #'
 #' Computes posterior survival curves \eqn{S(t) = \Pr(T > t)} from a fitted
-#' `exnex_surv` model for a log-normal AFT specification:
+#' `pooling_surv` model for a log-normal AFT specification:
 #' \deqn{\log T_i = \theta_{g[i]} + X_i^\top\beta + \varepsilon,\qquad
 #'   \varepsilon\sim\mathcal N(0,\sigma^2).}
 #' For a fixed time \eqn{t} and linear predictor \eqn{\eta}, the survival
@@ -49,7 +49,7 @@ resolve_newdata <- function(fit, newdata) {
 #' covariate values; otherwise the covariates are fixed at zero and the
 #' first group is used (with a warning if more than one group exists).
 #'
-#' @param fit A fitted `exnex_surv` object.
+#' @param fit A fitted `pooling_surv` object.
 #' @param newdata Optional data frame with columns matching the covariates of
 #'   the model. If it contains a `group` column, that is used for the group
 #'   index; otherwise the first group is used for all rows.
@@ -63,7 +63,7 @@ resolve_newdata <- function(fit, newdata) {
 #'   format columns: `time`, `median`, `lower`, `upper`, and `group`.
 #' @export
 survival_curves <- function(fit, newdata = NULL, times = NULL, level = 0.95, ...) {
-  checkmate::assert_class(fit, "exnex_surv")
+  checkmate::assert_class(fit, "pooling_surv")
   checkmate::assert_data_frame(newdata, null.ok = TRUE)
   checkmate::assert_numeric(times, lower = 0, any.missing = FALSE, null.ok = TRUE)
   checkmate::assert_number(level, lower = 0, upper = 1, finite = TRUE)
@@ -132,7 +132,7 @@ survival_curves <- function(fit, newdata = NULL, times = NULL, level = 0.95, ...
   out
 }
 
-#' Plot survival curves from an exnex_surv fit
+#' Plot survival curves from an pooling_surv fit
 #'
 #' Draws the posterior median and credible band of the survival function for
 #' each group. Requires `ggplot2`.
@@ -176,7 +176,7 @@ plot.survival_exnex <- function(x, ...) {
 #' therefore induce a posterior distribution of \eqn{t_{med}} whose quantiles
 #' are reported.
 #'
-#' @param fit A fitted `exnex_surv` object.
+#' @param fit A fitted `pooling_surv` object.
 #' @param newdata Optional data frame (one row gives one median).
 #' @param level Credible-interval level (default `0.95`).
 #' @param ... Unused.
@@ -184,7 +184,7 @@ plot.survival_exnex <- function(x, ...) {
 #' @return A `data.frame` with columns `group`, `median`, `lower`, `upper`.
 #' @export
 median_survival <- function(fit, newdata = NULL, level = 0.95, ...) {
-  checkmate::assert_class(fit, "exnex_surv")
+  checkmate::assert_class(fit, "pooling_surv")
   checkmate::assert_data_frame(newdata, null.ok = TRUE)
   checkmate::assert_number(level, lower = 0, upper = 1, finite = TRUE)
 
@@ -213,14 +213,14 @@ median_survival <- function(fit, newdata = NULL, level = 0.95, ...) {
   do.call(rbind, out)
 }
 
-#' Restricted mean survival time (RMST) from an exnex_surv fit
+#' Restricted mean survival time (RMST) from an pooling_surv fit
 #'
 #' Computes the restricted mean survival time up to a horizon `tmax`:
 #' \deqn{RMST(tmax) = \int_0^{tmax} S(t)\,dt.}
 #' The integral is evaluated numerically (trapezoidal rule over a fine grid)
 #' for every posterior draw, then summarised with posterior quantiles.
 #'
-#' @param fit A fitted `exnex_surv` object.
+#' @param fit A fitted `pooling_surv` object.
 #' @param tmax A positive scalar horizon up to which the RMST is computed.
 #'   Defaults to `max(fit$data$time)`.
 #' @param newdata Optional data frame (one row gives one RMST).
@@ -231,7 +231,7 @@ median_survival <- function(fit, newdata = NULL, level = 0.95, ...) {
 #' @return A `data.frame` with columns `group`, `rmst`, `lower`, `upper`.
 #' @export
 rmst <- function(fit, tmax = NULL, newdata = NULL, level = 0.95, grid_points = 400, ...) {
-  checkmate::assert_class(fit, "exnex_surv")
+  checkmate::assert_class(fit, "pooling_surv")
   checkmate::assert_data_frame(newdata, null.ok = TRUE)
   checkmate::assert_number(level, lower = 0, upper = 1, finite = TRUE)
   checkmate::assert_int(grid_points, lower = 100)

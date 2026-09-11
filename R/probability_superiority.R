@@ -7,7 +7,7 @@
 #' (RMST). The function works draw-by-draw on the posterior, so the probability
 #' is computed on the joint posterior of the two groups.
 #'
-#' @param fit A fitted `exnex_surv` object.
+#' @param fit A fitted `pooling_surv` object.
 #' @param a An integer index (or group label) of the first group.
 #' @param b An integer index (or group label) of the second group.
 #' @param newdata Optional data frame with one row per group, used to fix
@@ -33,7 +33,7 @@ probability_superiority <- function(
   tmax = NULL,
   ...
 ) {
-  checkmate::assert_class(fit, "exnex_surv")
+  checkmate::assert_class(fit, "pooling_surv")
   function_of <- match.arg(function_of, c("median", "survival", "S_t", "rmst"))
   if (function_of == "S_t") function_of <- "survival"
 

@@ -4,7 +4,20 @@
 \alias{cpp_exnex_gibbs}
 \title{Main Gibbs Sampler for EXNEX Survival Models}
 \usage{
-cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
+cpp_exnex_gibbs(
+  time,
+  event,
+  group,
+  X,
+  priors,
+  pooling,
+  verbose,
+  iter,
+  warmup,
+  chains,
+  chain_label,
+  progress_hook = NULL
+)
 }
 \arguments{
 \item{time}{Vector of observed follow-up times (n-vector, all > 0)}
@@ -27,11 +40,31 @@ basket-specific notation \eqn{p_{\mathrm{exch},j}}, \eqn{m_{0j}},
 \eqn{v_{0j}} of the model. Absent fields keep the defaults; unknown
 fields are ignored.}
 
+\item{pooling}{Pooling mode: one of \code{"exnex"} (EXNEX hierarchy with
+mixture indicators \eqn{Z_j}, exchangeable center \eqn{\mu} and
+between-basket variance \eqn{\tau^2}), \code{"complete"} (a single shared
+basket effect with prior \eqn{\mathcal N(m_{\mu}, v_{\mu})}; the
+EXNEX-specific priors are ignored) or \code{"none"} (independent basket
+effects with priors \eqn{\mathcal N(m_{0j}, v_{0j})}; the EXNEX-specific
+priors are ignored).}
+
+\item{verbose}{If \code{TRUE}, report chain progress every 10\% of the
+iterations on the standard output (or through \code{progress_hook});
+silence with \code{verbose = FALSE}. Default \code{TRUE}.}
+
 \item{iter}{Total number of MCMC iterations}
 
 \item{warmup}{Number of iterations to discard}
 
 \item{chains}{Number of independent chains to run}
+
+\item{chain_label}{Optional label (e.g. the chain number) shown in the
+progress lines; empty string omits it.}
+
+\item{progress_hook}{Optional R function called with one argument
+(the progress line) at every 10\% milestone instead of printing to the
+standard output; used by the parallel runner to relay progress to the
+master session.}
 }
 \value{
 List containing posterior draws, priors, metadata, and diagnostics

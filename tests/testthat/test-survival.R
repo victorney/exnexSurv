@@ -2,7 +2,7 @@ testthat::local_edition(3)
 
 # Small helper to fit quickly for tests
 make_fit <- function(data, formula, ...) {
-  exnexSurv::exnex_surv(
+  exnexSurv::pooling_surv(
     formula,
     data = data,
     iter = 200,
