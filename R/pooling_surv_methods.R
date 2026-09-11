@@ -27,6 +27,12 @@ summary.pooling_surv <- function(object, probs = c(0.05, 0.5, 0.95), ...) {
       apply(draws, 2, stats::quantile, probs = p)
   }
 
+  # attach convergence diagnostics (rhat / ESS) when they are available
+  diag <- tryCatch(.convergence_diagnostics_silent(object), error = function(e) NULL)
+  if (!is.null(diag)) {
+    out <- merge(out, diag, by = "parameter", sort = FALSE)
+  }
+
   out
 }
 
@@ -141,10 +147,25 @@ print.pooling_surv <- function(
   )
 
   summ <- summary(x)
-  print(
-    summ[, c("parameter", "mean", "sd", "q05", "q50", "q95")],
-    row.names = FALSE
+  show_cols <- intersect(
+    c("parameter", "mean", "sd", "q05", "q50", "q95", "rhat", "ess_bulk", "ess_tail"),
+    colnames(summ)
   )
+  print(summ[, show_cols], row.names = FALSE)
+
+  if ("rhat" %in% colnames(summ) && any(is.finite(summ$rhat))) {
+    worst_rhat <- max(summ$rhat, na.rm = TRUE)
+    min_ess <- min(c(summ$ess_bulk, summ$ess_tail), na.rm = TRUE)
+    cat(
+      "\nConvergence: max R-hat =",
+      formatC(worst_rhat, digits = 3), "| min ESS =",
+      formatC(min_ess, digits = 1, format = "f")
+    )
+    if (worst_rhat > 1.01 || min_ess < 100) {
+      cat(" (consider longer chains or more warmup)")
+    }
+    cat("\n")
+  }
 
   if (show_trace) {
     if (!requireNamespace("bayesplot", quietly = TRUE)) {

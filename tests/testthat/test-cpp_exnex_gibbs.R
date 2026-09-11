@@ -13,9 +13,11 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
     X = matrix(nrow = 3, ncol = 0),
     priors = list(alpha = 1),
     pooling = "exnex",
+    verbose = FALSE,
     iter = 6,
     warmup = 2,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
 
   set.seed(2719)
@@ -26,9 +28,11 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
     X = matrix(nrow = 3, ncol = 0),
     priors = list(alpha = 1),
     pooling = "exnex",
+    verbose = FALSE,
     iter = 6,
     warmup = 2,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
 
   expect_type(res1, "list")
@@ -52,6 +56,7 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
 
 test_that("cpp_exnex_gibbs validates input edge cases", {
   base_args <- list(
+    verbose = FALSE,
     time = c(5, 8, 12),
     event = c(1, 0, 1),
     group = c(1, 2, 1),
@@ -60,7 +65,8 @@ test_that("cpp_exnex_gibbs validates input edge cases", {
     pooling = "exnex",
     iter = 4,
     warmup = 2,
-    chains = 1
+    chains = 1,
+    chain_label = ""
   )
 
   expect_error_message(

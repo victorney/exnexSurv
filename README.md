@@ -52,7 +52,7 @@ d <- data.frame(
 fit <- pooling_surv(
   Surv(time, event) ~ group + x1,
   data = d,
-  iter = 2000, warmup = 1000, chains = 2, parallel_chains = 2
+  iter = 2000, warmup = 1000, chains = 2, parallel_chains = TRUE
 )
 
 summary(fit)

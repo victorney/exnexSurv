@@ -34,4 +34,6 @@
 #' @useDynLib exnexSurv, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #' @importFrom stats pnorm rnorm runif
+#' @importFrom progressr progressor with_progress
+#' @importFrom future plan
 NULL

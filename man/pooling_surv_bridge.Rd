@@ -14,7 +14,8 @@ pooling_surv_bridge(
   parallel_chains,
   group_col,
   original_data,
-  seed = NULL
+  seed = NULL,
+  verbose = TRUE
 )
 }
 \arguments{

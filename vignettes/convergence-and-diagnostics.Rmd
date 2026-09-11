@@ -89,7 +89,7 @@ fit <- pooling_surv(
   iter = 3000,
   warmup = 1000,
   chains = 2,
-  parallel_chains = 2,
+  parallel_chains = TRUE,
   seed = 6841
 )
 
@@ -178,7 +178,7 @@ fit_seeds <- lapply(c(6841, 7313, 8129), function(seed) {
     iter = 3000,
     warmup = 1000,
     chains = 2,
-    parallel_chains = 2,
+    parallel_chains = TRUE,
     seed = seed
   )
 })

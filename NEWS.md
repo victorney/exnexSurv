@@ -29,6 +29,29 @@
   under `"complete"` or `"none"`) now trigger a warning naming the ignored
   fields.
 * `print()` output now labels the fitted pooling variant.
+* New `verbose` argument in `pooling_surv()` (default `TRUE`): a live
+  progress bar (`progressr`) reports progress while the chains run;
+  silenced with `verbose = FALSE`.
+* `compare_waic()` now names rows with the argument names used in the call
+  (e.g. `fit_exnex`) instead of the anonymous `fit1`/`fit2` labels; when no
+  informative name is available it falls back to the fitted `pooling`
+  variant.
+* `parallel_chains` in `pooling_surv()` is now a logical flag:
+  `TRUE` runs all chains concurrently on background sessions through the
+  `future` framework (progress from workers is relayed to your console,
+  so it works in RStudio too); `FALSE` (default) runs chains sequentially.
+* With `verbose = TRUE`, a live progress bar (`progressr`) now updates
+  while the chains run, in both sequential and parallel execution; the
+  per-chain text lines were removed.
+* New `convergence_diagnostics()` computes split R-hat, bulk ESS and tail
+  ESS per parameter; `summary()`/`print()` now include these columns and a
+  one-line convergence verdict automatically.
+* New `rank_probabilities()` gives the posterior probability of each rank
+  position per basket (median survival, `S(t_0)`, or RMST summaries).
+* New `posterior_predictive_check()` overlays the posterior predictive mean
+  survival curve with the observed Kaplan-Meier curve per basket.
+* New `shrinkage_plot()` contrasts EXNEX posterior estimates against
+  unpooled Kaplan-Meier medians to visualise partial pooling.
 
 # exnexSurv 1.3.1
 

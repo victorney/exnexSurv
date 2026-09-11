@@ -223,9 +223,9 @@ test_that("exnex_surv validates public API edge cases", {
       iter = 4,
       warmup = 2,
       chains = 2,
-      parallel_chains = 3
+      parallel_chains = "yes"
     ),
-    "`parallel_chains` (3) must be less than or equal to `chains` (2)."
+    "Must be of type 'logical flag'"
   )
 
   expect_error_message(
@@ -260,8 +260,9 @@ test_that("exnex_surv supports parallel chain execution", {
     iter = 8,
     warmup = 3,
     chains = 2,
-    parallel_chains = 1,
-    seed = 2719
+    parallel_chains = FALSE,
+    seed = 2719,
+    verbose = FALSE
   )
 
   fit_parallel <- pooling_surv(
@@ -271,8 +272,9 @@ test_that("exnex_surv supports parallel chain execution", {
     iter = 8,
     warmup = 3,
     chains = 2,
-    parallel_chains = 2,
-    seed = 2719
+    parallel_chains = TRUE,
+    seed = 2719,
+    verbose = FALSE
   )
 
   expect_identical(dim(fit_seq$draws), c(10L, 4L))
@@ -492,4 +494,30 @@ test_that("exnex_surv() alias forces pooling = exnex with a deprecation message"
 
   expect_identical(fit_alias$draws, fit_new$draws)
   expect_identical(fit_alias$pooling, "exnex")
+})
+
+test_that("verbose shows progress and can be silenced", {
+  # verbose = TRUE draws a progress bar (progressr) and must not error
+  fit_v <- suppressMessages(pooling_surv(
+    survival::Surv(time, event) ~ group,
+    data = trial_data,
+    iter = 30,
+    warmup = 10,
+    chains = 1,
+    seed = 2719
+  ))
+  expect_s3_class(fit_v, "pooling_surv")
+
+  expect_silent(
+    fit_nv <- pooling_surv(
+      survival::Surv(time, event) ~ group,
+      data = trial_data,
+      iter = 30,
+      warmup = 10,
+      chains = 1,
+      seed = 2719,
+      verbose = FALSE
+    )
+  )
+  expect_s3_class(fit_nv, "pooling_surv")
 })

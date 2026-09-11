@@ -39,7 +39,14 @@ reference:
       - compute_waic
       - compare_waic
       - probability_superiority
+      - rank_probabilities
+      - convergence_diagnostics
       - simulate_data
+  - title: "Model checking and visuals"
+    desc: "Posterior predictive checks and shrinkage diagnostics for fitted `pooling_surv` objects."
+    contents:
+      - posterior_predictive_check
+      - shrinkage_plot
   - title: "Methods for fitted objects"
     desc: "Summarise, print, and plot fitted `pooling_surv` objects."
     contents:

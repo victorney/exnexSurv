@@ -14,3 +14,6 @@
 ^_pkgdown\.yml$
 ^pkgdown$
 ^\.posit/assistant$
+demo-exnexSurv\.R
+demo-exnexSurv-tools\.R
+Rplots\.pdf

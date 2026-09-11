@@ -115,10 +115,7 @@ validate_args <- function(priors, iter, warmup, chains, parallel_chains, group_c
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
   checkmate::assert_int(chains, lower = 1)
-  checkmate::assert_int(parallel_chains, lower = 1)
-  if (parallel_chains > chains) {
-    stop("`parallel_chains` (", parallel_chains, ") must be less than or equal to `chains` (", chains, ").", call. = FALSE)
-  }
+  checkmate::assert_flag(parallel_chains)
   checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
   checkmate::assert_int(seed, lower = 1, upper = 2147483647, null.ok = TRUE)
   if (warmup >= iter) {
@@ -162,12 +159,19 @@ validate_pooling <- function(pooling) {
 #' @param warmup Number of warmup iterations to discard. Default is 1000.
 #'   Posterior samples will have (iter - warmup) rows.
 #' @param chains Number of independent MCMC chains. Default is 1.
-#' @param parallel_chains Number of chains to run in parallel at the R level.
-#'   Must be between 1 and `chains`. Default is 1 (sequential chain execution).
+#' @param parallel_chains Logical. If `TRUE`, all `chains` run concurrently
+#'   on background R sessions (via the `future` framework); if `FALSE`
+#'   (default), chains run sequentially, one after the other.
 #' @param group_col Name of the column that represents the basket/group assignment.
 #'   This variable will be treated as the group index, separate from covariates.
 #'   If NULL (default), assumes the first RHS variable in the formula is the group.
 #' @param seed Random seed for reproducibility (optional).
+#' @param parallel_chains Logical. If `TRUE`, all `chains` run concurrently
+#'   on background R sessions (via the `future` framework); if `FALSE`
+#'   (default), chains run sequentially, one after the other.
+#' @param verbose If TRUE (default), show a live progress bar (`progressr`)
+#'   that advances as the chains run, in both sequential and parallel
+#'   execution. Silence it with `verbose = FALSE`.
 #'
 #' @export
 #' @rdname pooling_surv
@@ -179,15 +183,17 @@ pooling_surv.formula <- function(
   iter = 2000,
   warmup = 1000,
   chains = 1,
-  parallel_chains = 1,
+  parallel_chains = FALSE,
   group_col = NULL,
   seed = NULL,
+  verbose = TRUE,
   ...
 ) {
   checkmate::assert_formula(formula)
   checkmate::assert_data_frame(data, min.rows = 1, min.cols = 2)
   validate_pooling(pooling)
   validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
+  checkmate::assert_flag(verbose)
 
   if (!is.null(group_col) && !group_col %in% colnames(data)) {
     stop("Column '", group_col, "' not found in data.", call. = FALSE)
@@ -216,14 +222,16 @@ pooling_surv.formula <- function(
     parallel_chains = parallel_chains,
     group_col = group_col,
     original_data = data,
-    seed = seed
+    seed = seed,
+    verbose = verbose
   )
 }
 
 #' @param y A Surv object or matrix containing outcome (time and event status).
 #' @param chains Number of independent MCMC chains. Default is 1.
-#' @param parallel_chains Number of chains to run in parallel at the R level.
-#'   Must be between 1 and `chains`. Default is 1 (sequential chain execution).
+#' @param parallel_chains Logical. If `TRUE`, all `chains` run concurrently
+#'   on background R sessions (via the `future` framework); if `FALSE`
+#'   (default), chains run sequentially, one after the other.
 #' @param group_col Name of the column in `x` that represents the basket/group assignment.
 #'   If NULL (default), assumes the first column in x is the group.
 #' @param seed Random seed for reproducibility (optional).
@@ -238,9 +246,10 @@ pooling_surv.data.frame <- function(
   iter = 2000,
   warmup = 1000,
   chains = 1,
-  parallel_chains = 1,
+  parallel_chains = FALSE,
   group_col = NULL,
   seed = NULL,
+  verbose = TRUE,
   ...
 ) {
   checkmate::assert_data_frame(x, min.rows = 1, min.cols = 1)
@@ -251,6 +260,7 @@ pooling_surv.data.frame <- function(
 
   validate_pooling(pooling)
   validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
+  checkmate::assert_flag(verbose)
 
   n_y <- nrow(y)
 
@@ -289,6 +299,7 @@ pooling_surv.data.frame <- function(
     parallel_chains = parallel_chains,
     group_col = group_col,
     original_data = original_x,
-    seed = seed
+    seed = seed,
+    verbose = verbose
   )
 }

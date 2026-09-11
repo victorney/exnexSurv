@@ -2,20 +2,20 @@
 % Please edit documentation in R/pooling_surv_bridge.R
 \name{.run_chains_parallel_pooling}
 \alias{.run_chains_parallel_pooling}
-\title{Run multiple chains in parallel via PSOCK workers}
+\title{Run all chains concurrently on future workers}
 \usage{
 .run_chains_parallel_pooling(
   cpp_data,
   priors,
   pooling,
+  verbose,
   iter,
   warmup,
   chains,
-  parallel_chains,
   chain_seeds
 )
 }
 \description{
-Run multiple chains in parallel via PSOCK workers
+Run all chains concurrently on future workers
 }
 \keyword{internal}

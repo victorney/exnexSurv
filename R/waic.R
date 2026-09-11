@@ -108,6 +108,12 @@ compute_waic <- function(fit, ...) {
 #' Computes [compute_waic()] for each supplied fit and reports them in a
 #' single `data.frame`, sorted by ascending WAIC.
 #'
+#' Fits are labelled with the variable names used in the call when supplied
+#' unnamed (e.g. `fit_exnex`, `fit_complete`), or by the names given to
+#' `...`; when even those are unavailable, the fitted `pooling` variant is
+#' used, with a final `fit1`/`fit2` fallback for duplicate or anonymous
+#' labels.
+#'
 #' @param ... Two or more fitted `pooling_surv` objects.
 #' @param digit Number of decimal places for the reported statistics.
 #'
@@ -121,8 +127,7 @@ compare_waic <- function(..., digit = 2) {
   }
   for (f in fits) checkmate::assert_class(f, "pooling_surv")
 
-  fit_names <- names(fits)
-  if (is.null(fit_names)) fit_names <- paste0("fit", seq_along(fits))
+  fit_names <- .default_compare_names(substitute(...()), fits)
 
   out <- lapply(seq_along(fits), function(i) {
     w <- compute_waic(fits[[i]])
@@ -141,4 +146,45 @@ compare_waic <- function(..., digit = 2) {
   rownames(out) <- NULL
   out[, c("waic", "se_elpd_waic")] <- round(out[, c("waic", "se_elpd_waic")], digit)
   out
+}
+
+#' Human-readable labels for compare_waic rows
+#' @keywords internal
+.default_compare_names <- function(names_supplied, fits) {
+  n <- length(fits)
+  default <- rep("", n)
+
+  # names_supplied is the substituted `...()` pairlist: names are the tags of
+  # named arguments; unmatched bare symbols fall back to their deparsed name.
+  if (!is.null(names_supplied) && length(names_supplied) == n) {
+    tags <- names(names_supplied)
+    if (is.null(tags)) {
+      unlabelled <- rep(TRUE, n)
+    } else {
+      unlabelled <- ifelse(is.na(tags), TRUE, tags == "")
+    }
+    default[!unlabelled] <- tags[!unlabelled]
+
+    unlabelled <- which(unlabelled)
+    for (i in unlabelled) {
+      if (is.symbol(names_supplied[[i]])) {
+        default[i] <- deparse(names_supplied[[i]])
+      }
+    }
+  }
+
+  # Fall back to the fitted pooling variant where the label is empty.
+  missing <- !nzchar(default)
+  if (any(missing)) {
+    default[missing] <-
+      vapply(fits[missing], function(f) f$pooling, character(1))
+  }
+
+  # Keep duplicate labels readable.
+  tabs <- table(default)
+  for (nm in names(tabs)[tabs > 1]) {
+    hits <- which(default == nm)
+    default[hits] <- paste0(nm, "_", seq_along(hits))
+  }
+  default
 }

@@ -29,7 +29,8 @@ pooling_surv_bridge <- function(
   parallel_chains,
   group_col,
   original_data,
-  seed = NULL
+  seed = NULL,
+  verbose = TRUE
 ) {
   predictors <- processed$predictors
   outcomes <- processed$outcomes
@@ -139,29 +140,47 @@ pooling_surv_bridge <- function(
 
   chain_seeds <- .make_chain_seeds(chains = chains, seed = seed)
 
-  chain_runs <- if (chains == 1 || parallel_chains == 1) {
-    lapply(
-      seq_len(chains),
-      function(chain_id) {
-        .run_single_chain_pooling(
-          cpp_data = cpp_data,
-          priors = priors,
-          pooling = pooling,
-          iter = iter,
-          warmup = warmup,
-          seed = chain_seeds[chain_id]
-        )
-      }
-    )
+  chain_runs <- if (chains == 1 || !parallel_chains) {
+    run_chains <- function(progressor = NULL) {
+      lapply(
+        seq_len(chains),
+        function(chain_id) {
+          hook <- if (!is.null(progressor)) {
+            function(msg) progressor(msg)
+          } else {
+            NULL
+          }
+          .run_single_chain_pooling(
+            cpp_data = cpp_data,
+            priors = priors,
+            pooling = pooling,
+            iter = iter,
+            warmup = warmup,
+            seed = chain_seeds[chain_id],
+            chain_label = as.character(chain_id),
+            verbose = FALSE,
+            progress_hook = hook
+          )
+        }
+      )
+    }
+    if (verbose) {
+      progressr::with_progress(
+        run_chains(progressr::progressor(steps = 10L * chains)),
+        enable = TRUE
+      )
+    } else {
+      run_chains()
+    }
   } else {
     .run_chains_parallel_pooling(
       cpp_data = cpp_data,
       priors = priors,
       pooling = pooling,
+      verbose = verbose,
       iter = iter,
       warmup = warmup,
       chains = chains,
-      parallel_chains = parallel_chains,
       chain_seeds = chain_seeds
     )
   }
@@ -283,9 +302,41 @@ pooling_surv_bridge <- function(
   sample.int(.Machine$integer.max, size = chains, replace = FALSE)
 }
 
-#' Run a single chain by calling the C++ kernel once
+#' Signal progress without perturbing the worker RNG stream
+#'
+#' `progressor()` (and condition signalling in general) draws random
+#' condition identifiers inside the worker; restoring `.Random.seed` around
+#' the call keeps the MCMC draws independent of the progress reporting.
 #' @keywords internal
-.run_single_chain_pooling <- function(cpp_data, priors, pooling, iter, warmup, seed) {
+.wrap_progress_hook <- function(hook) {
+  function(msg) {
+    had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+    if (had_seed) {
+      old_seed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+    }
+    hook(msg)
+    if (had_seed) {
+      assign(".Random.seed", old_seed, envir = .GlobalEnv, inherits = FALSE)
+    } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+      rm(".Random.seed", envir = .GlobalEnv)
+    }
+    invisible(NULL)
+  }
+}
+
+#' Run a single chain by calling the C++ kernel once
+#'
+#' `rng_kind` pins the RNG configuration (future workers may default to a
+#' different normal-kind sampler, which would make the same seed produce
+#' different draws than sequential execution).
+#' @keywords internal
+.run_single_chain_pooling <- function(cpp_data, priors, pooling, iter, warmup, seed, verbose = TRUE, chain_label = "", progress_hook = NULL, rng_kind = NULL) {
+  # future workers may default to a different normal-kind sampler than the
+  # master session; pin the master's RNG kind so the same seed produces
+  # identical draws in sequential and parallel execution
+  if (!is.null(rng_kind)) {
+    do.call(RNGkind, as.list(rng_kind))
+  }
   set.seed(seed)
 
   out <- cpp_exnex_gibbs(
@@ -295,9 +346,12 @@ pooling_surv_bridge <- function(
     X = cpp_data$X,
     priors = priors,
     pooling = pooling,
+    verbose = verbose,
     iter = iter,
     warmup = warmup,
-    chains = 1L
+    chains = 1L,
+    chain_label = chain_label,
+    progress_hook = if (is.null(progress_hook)) NULL else .wrap_progress_hook(progress_hook)
   )
 
   list(
@@ -306,61 +360,70 @@ pooling_surv_bridge <- function(
   )
 }
 
-#' Run multiple chains in parallel via PSOCK workers
+#' Run all chains concurrently on future workers
 #' @keywords internal
 .run_chains_parallel_pooling <- function(
   cpp_data,
   priors,
   pooling,
+  verbose,
   iter,
   warmup,
   chains,
-  parallel_chains,
   chain_seeds
 ) {
-  workers <- min(parallel_chains, chains)
-  cl <- parallel::makeCluster(workers)
-  on.exit(parallel::stopCluster(cl), add = TRUE)
-  lib_paths <- .libPaths()
-  parallel::clusterCall(
-    cl,
-    function(paths) {
-      .libPaths(paths)
-      loadNamespace("exnexSurv")
-      NULL
-    },
-    lib_paths
-  )
+  old_plan <- future::plan()
+  old_rng_misuse <- getOption("future.rng.onMisuse")
+  master_rng_kind <- RNGkind()
+  future::plan(future::multisession, workers = chains)
+  options(future.rng.onMisuse = "ignore")
+  on.exit({
+    future::plan(old_plan)
+    options(future.rng.onMisuse = old_rng_misuse)
+  }, add = TRUE)
 
-  parallel::parLapply(
-    cl,
-    X = seq_len(chains),
-    fun = function(chain_id, cpp_data, priors, pooling, iter, warmup, chain_seeds) {
-      set.seed(chain_seeds[chain_id])
+  relay_chains <- function(progressor = NULL) {
+    future.apply::future_lapply(
+      X = seq_len(chains),
+      FUN = function(chain_id, cpp_data, priors, pooling, iter, warmup, chain_seeds, master_rng_kind, progressor) {
+        hook <- if (!is.null(progressor)) {
+          function(msg) progressor(msg)
+        } else {
+          NULL
+        }
+        .run_single_chain_pooling(
+          cpp_data = cpp_data,
+          priors = priors,
+          pooling = pooling,
+          iter = iter,
+          warmup = warmup,
+          seed = chain_seeds[chain_id],
+          verbose = FALSE,
+          chain_label = as.character(chain_id),
+          progress_hook = hook,
+          rng_kind = master_rng_kind
+        )
+      },
+      cpp_data = cpp_data,
+      priors = priors,
+      pooling = pooling,
+      iter = iter,
+      warmup = warmup,
+      chain_seeds = chain_seeds,
+      master_rng_kind = master_rng_kind,
+      progressor = progressor
+    )
+  }
 
-      fit_cpp <- utils::getFromNamespace("cpp_exnex_gibbs", ns = "exnexSurv")
-      fit <- fit_cpp(
-        time = cpp_data$time,
-        event = cpp_data$event,
-        group = cpp_data$group,
-        X = cpp_data$X,
-        priors = priors,
-        pooling = pooling,
-        iter = iter,
-        warmup = warmup,
-        chains = 1L
-      )
-
-      list(
-        draws = as.data.frame(fit$draws),
-        diagnostics = fit$diagnostics
-      )
-    },
-    cpp_data = cpp_data,
-    priors = priors,
-    pooling = pooling,
-    iter = iter,
-    warmup = warmup,
-    chain_seeds = chain_seeds
-  )
+  # Workers cannot write to the master console; progress is a live
+  # progress bar via `progressr` (future relays worker progress conditions
+  # continuously). No per-chain text lines are printed in parallel mode.
+  if (verbose) {
+    progressr::with_progress(
+      relay_chains(progressr::progressor(steps = 10L * chains)),
+      enable = TRUE
+    )
+  } else {
+    relay_chains()
+  }
 }

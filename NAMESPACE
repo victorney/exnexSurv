@@ -9,14 +9,23 @@ S3method(print,pooling_surv)
 S3method(summary,pooling_surv)
 export(compare_waic)
 export(compute_waic)
+export(convergence_diagnostics)
 export(exnex_surv)
 export(median_survival)
 export(pooling_surv)
+export(posterior_predictive_check)
 export(probability_superiority)
+export(rank_probabilities)
 export(rmst)
+export(shrinkage_plot)
 export(simulate_data)
 export(survival_curves)
 importFrom(Rcpp,evalCpp)
+importFrom(future,plan)
+importFrom(progressr,
+  progressor,
+  with_progress
+)
 importFrom(stats,
   pnorm,
   rnorm,

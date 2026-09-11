@@ -15,7 +15,10 @@ BugReports: https://github.com/victorney/exnexSurv/issues
 Imports:
   Rcpp (>= 1.1.1),
   hardhat (>= 1.4.0),
-  checkmate (>= 2.1.0)
+  checkmate (>= 2.1.0),
+  progressr,
+  future,
+  future.apply
 Suggests:
   testthat (>= 3.3.0),
   survival (>= 3.8),
@@ -23,7 +26,8 @@ Suggests:
   rmarkdown,
   ggplot2,
   bayesplot,
-  viridisLite
+  viridisLite,
+  posterior
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8

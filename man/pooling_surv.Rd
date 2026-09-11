@@ -19,9 +19,10 @@ pooling_surv(x, ...)
   iter = 2000,
   warmup = 1000,
   chains = 1,
-  parallel_chains = 1,
+  parallel_chains = FALSE,
   group_col = NULL,
   seed = NULL,
+  verbose = TRUE,
   ...
 )
 
@@ -33,9 +34,10 @@ pooling_surv(x, ...)
   iter = 2000,
   warmup = 1000,
   chains = 1,
-  parallel_chains = 1,
+  parallel_chains = FALSE,
   group_col = NULL,
   seed = NULL,
+  verbose = TRUE,
   ...
 )
 }
@@ -83,13 +85,18 @@ Posterior samples will have (iter - warmup) rows.}
 
 \item{chains}{Number of independent MCMC chains. Default is 1.}
 
-\item{parallel_chains}{Number of chains to run in parallel at the R level.
-Must be between 1 and `chains`. Default is 1 (sequential chain execution).}
+\item{parallel_chains}{Logical. If `TRUE`, all `chains` run concurrently
+on background R sessions (via the `future` framework); if `FALSE`
+(default), chains run sequentially, one after the other.}
 
 \item{group_col}{Name of the column in `x` that represents the basket/group assignment.
 If NULL (default), assumes the first column in x is the group.}
 
 \item{seed}{Random seed for reproducibility (optional).}
+
+\item{verbose}{If TRUE (default), show a live progress bar (`progressr`)
+that advances as the chains run, in both sequential and parallel
+execution. Silence it with `verbose = FALSE`.}
 
 \item{y}{A Surv object or matrix containing outcome (time and event status).}
 }

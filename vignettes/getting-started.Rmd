@@ -108,7 +108,7 @@ fit_parallel <- pooling_surv(
   iter = 1200,
   warmup = 400,
   chains = 2,
-  parallel_chains = 2,
+  parallel_chains = TRUE,
   seed = 6421
 )
 
@@ -120,9 +120,9 @@ plot(
 )
 ```
 
-When `parallel_chains` is greater than 1, the chains are evaluated concurrently by R and the traceplots show all chains in the same panel for each parameter.
+When `parallel_chains = TRUE`, all chains are evaluated concurrently on background R sessions (through the `future` framework) and the traceplots show all chains in the same panel for each parameter.
 
-If you do not want to use all available workers, set `parallel_chains` smaller than `chains`. For example, `chains = 4` and `parallel_chains = 2` runs four independent chains while evaluating two at a time.
+With `verbose = TRUE` a live progress bar (`progressr`) updates while the chains run, in both sequential and parallel execution.
 
 The fitted object stores the combined post-warmup draws from all chains in one table. Because each chain contributes the same number of post-warmup samples, the total number of rows is `(iter - warmup) * chains`.
 
@@ -195,4 +195,4 @@ list of hyperparameters and how to set them.
 
 ## Notes
 
-The current implementation supports multiple chains, including R-level parallel execution through `parallel_chains`. For a more careful convergence check, fit more than one chain and compare the traceplots and posterior summaries across chains.
+The current implementation supports multiple chains, including R-level concurrent execution through `parallel_chains = TRUE`. For a more careful convergence check, fit more than one chain and compare the traceplots and posterior summaries across chains.

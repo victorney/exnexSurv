@@ -430,7 +430,7 @@ We fit the EXNEX model with two chains in parallel:
 fit <- pooling_surv(
   Surv(time, event) ~ group + X1 + X2,
   data = d,
-  iter = 1500, warmup = 750, chains = 2, parallel_chains = 2, seed = 42
+  iter = 1500, warmup = 750, chains = 2, parallel_chains = TRUE, seed = 42
 )
 print(fit, show_trace = FALSE)
 ```

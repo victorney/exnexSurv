@@ -28,13 +28,22 @@
 #'   EXNEX-specific priors are ignored) or \code{"none"} (independent basket
 #'   effects with priors \eqn{\mathcal N(m_{0j}, v_{0j})}; the EXNEX-specific
 #'   priors are ignored).
+#' @param verbose If \code{TRUE}, report chain progress every 10\% of the
+#'   iterations on the standard output (or through \code{progress_hook});
+#'   silence with \code{verbose = FALSE}. Default \code{TRUE}.
 #' @param iter Total number of MCMC iterations
 #' @param warmup Number of iterations to discard
 #' @param chains Number of independent chains to run
+#' @param chain_label Optional label (e.g. the chain number) shown in the
+#'   progress lines; empty string omits it.
+#' @param progress_hook Optional R function called with one argument
+#'   (the progress line) at every 10\% milestone instead of printing to the
+#'   standard output; used by the parallel runner to relay progress to the
+#'   master session.
 #'
 #' @return List containing posterior draws, priors, metadata, and diagnostics
 #' @keywords internal
-cpp_exnex_gibbs <- function(time, event, group, X, priors, pooling, iter, warmup, chains) {
-    .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, pooling, iter, warmup, chains)
+cpp_exnex_gibbs <- function(time, event, group, X, priors, pooling, verbose, iter, warmup, chains, chain_label, progress_hook = NULL) {
+    .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, pooling, verbose, iter, warmup, chains, chain_label, progress_hook)
 }
 

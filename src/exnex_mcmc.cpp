@@ -95,9 +95,18 @@ arma::vec draw_normal_from_precision(const arma::mat& precision, const arma::vec
 //'   EXNEX-specific priors are ignored) or \code{"none"} (independent basket
 //'   effects with priors \eqn{\mathcal N(m_{0j}, v_{0j})}; the EXNEX-specific
 //'   priors are ignored).
+//' @param verbose If \code{TRUE}, report chain progress every 10\% of the
+//'   iterations on the standard output (or through \code{progress_hook});
+//'   silence with \code{verbose = FALSE}. Default \code{TRUE}.
 //' @param iter Total number of MCMC iterations
 //' @param warmup Number of iterations to discard
 //' @param chains Number of independent chains to run
+//' @param chain_label Optional label (e.g. the chain number) shown in the
+//'   progress lines; empty string omits it.
+//' @param progress_hook Optional R function called with one argument
+//'   (the progress line) at every 10\% milestone instead of printing to the
+//'   standard output; used by the parallel runner to relay progress to the
+//'   master session.
 //'
 //' @return List containing posterior draws, priors, metadata, and diagnostics
 //' @keywords internal
@@ -105,8 +114,10 @@ arma::vec draw_normal_from_precision(const arma::mat& precision, const arma::vec
 Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
                            const arma::vec &group, const arma::mat &X,
                            Rcpp::List priors, const std::string &pooling,
+                           const bool verbose,
                            const int &iter, const int &warmup,
-                           const int &chains) {
+                           const int &chains, const std::string &chain_label,
+                           Rcpp::Nullable<Rcpp::Function> progress_hook = R_NilValue) {
   Rcpp::RNGScope scope;
 
   double a_sigma = 2.0;
@@ -337,7 +348,43 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     beta_prior_precision = arma::eye(P, P) / v_beta;
   }
 
+  // Progress reporting: printed to the standard output once per 10% of the
+  // total iterations. Stdout (unlike raw messages) is visible on the master
+  // console even when this runs on a parallel PSOCK worker.
+  std::vector<int> milestones;
+  // milestones fire when verbose printing is on OR a progress hook is
+  // provided (the parallel runner suppresses verbose and relays via hook)
+  if ((verbose || progress_hook.isNotNull()) && iter >= 10) {
+    for (int step = 1; step <= 10; ++step) {
+      milestones.push_back(step * iter / 10);
+    }
+  }
+  size_t milestone_idx = 0;
+  std::string progress_prefix = "[exnexSurv pooling=" + pooling + "]";
+  if (!chain_label.empty()) {
+    progress_prefix = "[exnexSurv chain " + chain_label + " pooling=" + pooling + "]";
+  }
+
   for (int iter_idx = 0; iter_idx < iter; ++iter_idx) {
+    if (milestone_idx < milestones.size() &&
+        (iter_idx + 1) == static_cast<unsigned int>(milestones[milestone_idx])) {
+      std::string line = progress_prefix + " iteration " +
+        std::to_string(iter_idx + 1) + "/" + std::to_string(iter) +
+        " (" + std::to_string(10 * (milestone_idx + 1)) + "%)";
+      if (progress_hook.isNotNull()) {
+        Rcpp::Function hook(progress_hook);
+        // Flush the in-memory RNG state to .Random.seed before signalling so
+        // R-side code (the hook, and progress/message relaying) sees the true
+        // state and can restore it; re-read it afterwards so the sampler
+        // continues from exactly the same stream as if nothing was signalled.
+        PutRNGstate();
+        hook(line);
+        GetRNGstate();
+      } else {
+        Rprintf("%s\n", line.c_str());
+      }
+      ++milestone_idx;
+    }
     // Current linear predictor from fixed effects.
     arma::vec xb = arma::zeros<arma::vec>(n);
     if (P > 0) {
