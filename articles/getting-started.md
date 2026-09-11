@@ -2,8 +2,11 @@
 
 ## Overview
 
-`exnexSurv` fits Bayesian EXNEX survival models for right-censored
-log-normal data. The current interface supports:
+`exnexSurv` fits Bayesian pooling models for right-censored log-normal
+data: the EXNEX hierarchy (`pooling = "exnex"`, the default), complete
+pooling (`pooling = "complete"`), and no pooling (`pooling = "none"`).
+See the *Model and Methods* vignette for details. The current interface
+supports:
 
 - a formula interface,
 - an `x`/`y` interface,
@@ -75,7 +78,7 @@ mean(sim_data$event)
 
 ``` r
 
-fit_formula <- exnex_surv(
+fit_formula <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 1200,
@@ -85,25 +88,40 @@ fit_formula <- exnex_surv(
 )
 
 print(fit_formula, show_trace = FALSE)
-#> <exnex_surv model>
+#> <pooling_surv model>
+#> Pooling: exnex 
 #> Draws: 800 total post-warmup samples
 #>        800 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
 #> MCMC: iter = 1200 , warmup = 400 , chains = 1 
 #> 
-#>  parameter       mean         sd        q05        q50        q95
-#>    theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766
-#>    theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219
-#>    theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712
-#>     beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734
-#>     sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242
+#>  parameter       mean         sd        q05        q50        q95      rhat
+#>    theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766 0.9993574
+#>    theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219 0.9990455
+#>    theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712 1.0055107
+#>     beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734 1.0084968
+#>     sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242 1.0003663
+#>  ess_bulk ess_tail
+#>  768.5948 597.2774
+#>  459.6751 582.4569
+#>  451.6547 533.8496
+#>  321.3371 497.4946
+#>  553.2356 727.2810
+#> 
+#> Convergence: max R-hat = 1.01 | min ESS = 321.3
 summary(fit_formula)
-#>   parameter       mean         sd        q05        q50        q95
-#> 1   theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766
-#> 2   theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219
-#> 3   theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712
-#> 4    beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734
-#> 5    sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242
+#>   parameter       mean         sd        q05        q50        q95      rhat
+#> 1   theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766 0.9993574
+#> 2   theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219 0.9990455
+#> 3   theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712 1.0055107
+#> 4    beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734 1.0084968
+#> 5    sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242 1.0003663
+#>   ess_bulk ess_tail
+#> 1 768.5948 597.2774
+#> 2 459.6751 582.4569
+#> 3 451.6547 533.8496
+#> 4 321.3371 497.4946
+#> 5 553.2356 727.2810
 ```
 
 The fitted object stores the processed data, posterior draws, and MCMC
@@ -113,29 +131,38 @@ settings. You can inspect the model structure with the usual S3 methods.
 
 ``` r
 
-fit_parallel <- exnex_surv(
+fit_parallel <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 1200,
   warmup = 400,
   chains = 2,
-  parallel_chains = 2,
+  parallel_chains = TRUE,
   seed = 6421
 )
 
 print(fit_parallel, show_trace = FALSE)
-#> <exnex_surv model>
+#> <pooling_surv model>
+#> Pooling: exnex 
 #> Draws: 1600 total post-warmup samples
 #>        800 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
 #> MCMC: iter = 1200 , warmup = 400 , chains = 2 
 #> 
-#>  parameter       mean         sd        q05        q50        q95
-#>    theta_1  0.9870040 0.06958675  0.8748666  0.9858982  1.0979172
-#>    theta_2  1.5334538 0.07136513  1.4126375  1.5335034  1.6516964
-#>    theta_3  1.9815311 0.07540195  1.8590322  1.9798331  2.1025855
-#>     beta_1 -0.3047351 0.04333179 -0.3782277 -0.3047538 -0.2341006
-#>     sigma2  0.2337765 0.03210020  0.1862492  0.2316788  0.2892194
+#>  parameter       mean         sd        q05        q50        q95      rhat
+#>    theta_1  0.9870040 0.06958675  0.8748666  0.9858982  1.0979172 0.9995272
+#>    theta_2  1.5334538 0.07136513  1.4126375  1.5335034  1.6516964 0.9997952
+#>    theta_3  1.9815311 0.07540195  1.8590322  1.9798331  2.1025855 1.0005217
+#>     beta_1 -0.3047351 0.04333179 -0.3782277 -0.3047538 -0.2341006 1.0038610
+#>     sigma2  0.2337765 0.03210020  0.1862492  0.2316788  0.2892194 1.0002698
+#>  ess_bulk ess_tail
+#>  1615.809 1334.522
+#>  1062.443 1235.490
+#>   929.403 1270.271
+#>   855.130 1209.172
+#>  1078.190 1459.379
+#> 
+#> Convergence: max R-hat =    1 | min ESS = 855.1
 plot(
   fit_parallel,
   parameters = c("theta_1", "theta_2", "theta_3", "beta_1", "sigma2"),
@@ -145,14 +172,12 @@ plot(
 
 ![](getting-started_files/figure-html/unnamed-chunk-4-1.png)![](getting-started_files/figure-html/unnamed-chunk-4-2.png)![](getting-started_files/figure-html/unnamed-chunk-4-3.png)![](getting-started_files/figure-html/unnamed-chunk-4-4.png)![](getting-started_files/figure-html/unnamed-chunk-4-5.png)
 
-When `parallel_chains` is greater than 1, the chains are evaluated
-concurrently by R and the traceplots show all chains in the same panel
-for each parameter.
+When `parallel_chains = TRUE`, all chains are evaluated concurrently on
+background R sessions (through the `future` framework) and the
+traceplots show all chains in the same panel for each parameter.
 
-If you do not want to use all available workers, set `parallel_chains`
-smaller than `chains`. For example, `chains = 4` and
-`parallel_chains = 2` runs four independent chains while evaluating two
-at a time.
+With `verbose = TRUE` a live progress bar (`progressr`) updates while
+the chains run, in both sequential and parallel execution.
 
 The fitted object stores the combined post-warmup draws from all chains
 in one table. Because each chain contributes the same number of
@@ -188,7 +213,7 @@ plot(
 
 ``` r
 
-fit_xy <- exnex_surv(
+fit_xy <- pooling_surv(
   x = sim_data[c("group", "age_std")],
   y = Surv(sim_data$time, sim_data$event),
   iter = 1200,
@@ -198,12 +223,18 @@ fit_xy <- exnex_surv(
 )
 
 summary(fit_xy)
-#>   parameter       mean         sd        q05        q50        q95
-#> 1   theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766
-#> 2   theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219
-#> 3   theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712
-#> 4    beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734
-#> 5    sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242
+#>   parameter       mean         sd        q05        q50        q95      rhat
+#> 1   theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766 0.9993574
+#> 2   theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219 0.9990455
+#> 3   theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712 1.0055107
+#> 4    beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734 1.0084968
+#> 5    sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242 1.0003663
+#>   ess_bulk ess_tail
+#> 1 768.5948 597.2774
+#> 2 459.6751 582.4569
+#> 3 451.6547 533.8496
+#> 4 321.3371 497.4946
+#> 5 553.2356 727.2810
 all.equal(fit_formula$draws, fit_xy$draws)
 #> [1] TRUE
 ```
@@ -217,7 +248,7 @@ estimated.
 
 ``` r
 
-fit_no_cov <- exnex_surv(
+fit_no_cov <- pooling_surv(
   Surv(time, event) ~ group,
   data = sim_data,
   iter = 1200,
@@ -227,11 +258,16 @@ fit_no_cov <- exnex_surv(
 )
 
 summary(fit_no_cov)
-#>   parameter      mean         sd       q05       q50       q95
-#> 1   theta_1 0.9610428 0.07667525 0.8240873 0.9646688 1.0782239
-#> 2   theta_2 1.5114113 0.08415282 1.3716898 1.5122529 1.6479938
-#> 3   theta_3 1.9543858 0.08866337 1.8051221 1.9554501 2.0994038
-#> 4    sigma2 0.3194790 0.04445914 0.2526799 0.3156426 0.4000848
+#>   parameter      mean         sd       q05       q50       q95      rhat
+#> 1   theta_1 0.9610428 0.07667525 0.8240873 0.9646688 1.0782239 0.9999338
+#> 2   theta_2 1.5114113 0.08415282 1.3716898 1.5122529 1.6479938 1.0007384
+#> 3   theta_3 1.9543858 0.08866337 1.8051221 1.9554501 2.0994038 0.9999588
+#> 4    sigma2 0.3194790 0.04445914 0.2526799 0.3156426 0.4000848 1.0029710
+#>   ess_bulk ess_tail
+#> 1 753.9749 762.1476
+#> 2 651.1591 641.7757
+#> 3 429.1694 610.9976
+#> 4 452.9197 683.4747
 plot(fit_no_cov, ask = FALSE)
 ```
 
@@ -242,12 +278,18 @@ plot(fit_no_cov, ask = FALSE)
 ``` r
 
 summary(fit_formula)
-#>   parameter       mean         sd        q05        q50        q95
-#> 1   theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766
-#> 2   theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219
-#> 3   theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712
-#> 4    beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734
-#> 5    sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242
+#>   parameter       mean         sd        q05        q50        q95      rhat
+#> 1   theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766 0.9993574
+#> 2   theta_2  1.5326028 0.07082872  1.4121900  1.5318814  1.6524219 0.9990455
+#> 3   theta_3  1.9841454 0.07555761  1.8632978  1.9833107  2.1082712 1.0055107
+#> 4    beta_1 -0.3075793 0.04281121 -0.3797194 -0.3074616 -0.2362734 1.0084968
+#> 5    sigma2  0.2347691 0.03216346  0.1856459  0.2331866  0.2883242 1.0003663
+#>   ess_bulk ess_tail
+#> 1 768.5948 597.2774
+#> 2 459.6751 582.4569
+#> 3 451.6547 533.8496
+#> 4 321.3371 497.4946
+#> 5 553.2356 727.2810
 ```
 
 ## Inspecting the resolved priors
@@ -301,6 +343,6 @@ hyperparameters and how to set them.
 ## Notes
 
 The current implementation supports multiple chains, including R-level
-parallel execution through `parallel_chains`. For a more careful
-convergence check, fit more than one chain and compare the traceplots
-and posterior summaries across chains.
+concurrent execution through `parallel_chains = TRUE`. For a more
+careful convergence check, fit more than one chain and compare the
+traceplots and posterior summaries across chains.

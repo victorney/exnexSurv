@@ -16,7 +16,7 @@ median_survival(fit, newdata = NULL, level = 0.95, ...)
 
 - fit:
 
-  A fitted \`exnex_surv\` object.
+  A fitted \`pooling_surv\` object.
 
 - newdata:
 

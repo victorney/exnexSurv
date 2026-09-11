@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exnexSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Practical guides</h6></li>
     <li><a class="dropdown-item" href="../articles/convergence-and-diagnostics.html">Convergence and Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running Chains in Parallel</a></li>
+    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running chains in parallel</a></li>
     <li><a class="dropdown-item" href="../articles/tools-for-experimenters.html">Tools for Experimenters</a></li>
   </ul>
 </li>
@@ -81,7 +81,7 @@
     
 <p>Beyond fitting, <code>exnexSurv</code> provides a small set of
 inference and model-selection utilities that operate directly on the
-posterior draws already stored in a fitted <code>exnex_surv</code>
+posterior draws already stored in a fitted <code>pooling_surv</code>
 object. This vignette walks through each of them using a small simulated
 example.</p>
 <div class="section level2">
@@ -128,7 +128,7 @@ designed to handle.</p>
 <p>Now fit the model. We keep the chain short so the vignette builds
 quickly; for real work use more iterations and multiple chains.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">x1</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  iter <span class="op">=</span> <span class="fl">2000</span>,</span>
@@ -137,24 +137,39 @@ quickly; for real work use more iterations and multiple chains.</p>
 <span>  seed <span class="op">=</span> <span class="fl">7</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span>, show_trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;exnex_surv model&gt;</span></span>
+<span><span class="co">#&gt; &lt;pooling_surv model&gt;</span></span>
+<span><span class="co">#&gt; Pooling: exnex </span></span>
 <span><span class="co">#&gt; Draws: 2000 total post-warmup samples</span></span>
 <span><span class="co">#&gt;        1000 post-warmup samples per chain</span></span>
 <span><span class="co">#&gt; Groups: 9 | Covariates: 1 </span></span>
 <span><span class="co">#&gt; MCMC: iter = 2000 , warmup = 1000 , chains = 2 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  parameter        mean        sd        q05         q50        q95</span></span>
-<span><span class="co">#&gt;    theta_1  0.11669485 0.3069765 -0.3559653  0.10164526  0.6594590</span></span>
-<span><span class="co">#&gt;    theta_2 -0.93329406 0.2705633 -1.3614140 -0.94103137 -0.4745091</span></span>
-<span><span class="co">#&gt;    theta_3 -0.39262307 0.3118125 -0.8972846 -0.39517207  0.1279407</span></span>
-<span><span class="co">#&gt;    theta_4  0.32611057 0.3096740 -0.1786917  0.31792317  0.8508286</span></span>
-<span><span class="co">#&gt;    theta_5 -0.06263464 0.2780822 -0.5129246 -0.07036695  0.3991122</span></span>
-<span><span class="co">#&gt;    theta_6  0.18591764 0.3207427 -0.3435120  0.18593333  0.7207398</span></span>
-<span><span class="co">#&gt;    theta_7  0.22624399 0.3367305 -0.3136029  0.22118365  0.7945553</span></span>
-<span><span class="co">#&gt;    theta_8 -0.81203876 0.2875932 -1.2800821 -0.81498863 -0.3578141</span></span>
-<span><span class="co">#&gt;    theta_9 -0.01260007 0.3443596 -0.5723189 -0.02049141  0.5682546</span></span>
-<span><span class="co">#&gt;     beta_1  0.58664689 0.1243464  0.3808375  0.58879860  0.7866019</span></span>
-<span><span class="co">#&gt;     sigma2  1.45675160 0.2336813  1.1254281  1.43078082  1.8681451</span></span></code></pre></div>
+<span><span class="co">#&gt;  parameter        mean        sd        q05         q50        q95      rhat</span></span>
+<span><span class="co">#&gt;    theta_1  0.11669485 0.3069765 -0.3559653  0.10164526  0.6594590 0.9999671</span></span>
+<span><span class="co">#&gt;    theta_2 -0.93329406 0.2705633 -1.3614140 -0.94103137 -0.4745091 0.9997708</span></span>
+<span><span class="co">#&gt;    theta_3 -0.39262307 0.3118125 -0.8972846 -0.39517207  0.1279407 0.9998223</span></span>
+<span><span class="co">#&gt;    theta_4  0.32611057 0.3096740 -0.1786917  0.31792317  0.8508286 1.0000792</span></span>
+<span><span class="co">#&gt;    theta_5 -0.06263464 0.2780822 -0.5129246 -0.07036695  0.3991122 1.0007271</span></span>
+<span><span class="co">#&gt;    theta_6  0.18591764 0.3207427 -0.3435120  0.18593333  0.7207398 1.0013532</span></span>
+<span><span class="co">#&gt;    theta_7  0.22624399 0.3367305 -0.3136029  0.22118365  0.7945553 1.0036246</span></span>
+<span><span class="co">#&gt;    theta_8 -0.81203876 0.2875932 -1.2800821 -0.81498863 -0.3578141 1.0004449</span></span>
+<span><span class="co">#&gt;    theta_9 -0.01260007 0.3443596 -0.5723189 -0.02049141  0.5682546 0.9999890</span></span>
+<span><span class="co">#&gt;     beta_1  0.58664689 0.1243464  0.3808375  0.58879860  0.7866019 1.0003532</span></span>
+<span><span class="co">#&gt;     sigma2  1.45675160 0.2336813  1.1254281  1.43078082  1.8681451 1.0014806</span></span>
+<span><span class="co">#&gt;   ess_bulk  ess_tail</span></span>
+<span><span class="co">#&gt;   985.1951 1360.9958</span></span>
+<span><span class="co">#&gt;  1294.0195 1808.7330</span></span>
+<span><span class="co">#&gt;   941.3412 1275.7780</span></span>
+<span><span class="co">#&gt;  1052.4902 1358.4968</span></span>
+<span><span class="co">#&gt;  1113.2750 1298.6132</span></span>
+<span><span class="co">#&gt;   841.7601 1464.7546</span></span>
+<span><span class="co">#&gt;   681.1668 1130.6408</span></span>
+<span><span class="co">#&gt;  1182.8063 1608.6092</span></span>
+<span><span class="co">#&gt;   679.8265 1141.9648</span></span>
+<span><span class="co">#&gt;   793.1829 1221.2555</span></span>
+<span><span class="co">#&gt;   460.6929  755.8611</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Convergence: max R-hat =    1 | min ESS = 460.7</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="survival-curves">Survival curves<a class="anchor" aria-label="anchor" href="#survival-curves"></a>
@@ -245,7 +260,7 @@ predictive density (<code>lpd</code>) and the penalty
 <p><code><a href="../reference/compare_waic.html">compare_waic()</a></code> contrasts several fits (e.g. a full model
 vs. a group-only model) and returns them ordered by ascending WAIC:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_group</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit_group</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  iter <span class="op">=</span> <span class="fl">2000</span>, warmup <span class="op">=</span> <span class="fl">1000</span>, chains <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">7</span></span>

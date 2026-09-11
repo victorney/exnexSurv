@@ -1,4 +1,4 @@
-# Restricted mean survival time (RMST) from an exnex_surv fit
+# Restricted mean survival time (RMST) from an pooling_surv fit
 
 Computes the restricted mean survival time up to a horizon \`tmax\`:
 \$\$RMST(tmax) = \int_0^{tmax} S(t)\\dt.\$\$ The integral is evaluated
@@ -15,7 +15,7 @@ rmst(fit, tmax = NULL, newdata = NULL, level = 0.95, grid_points = 400, ...)
 
 - fit:
 
-  A fitted \`exnex_surv\` object.
+  A fitted \`pooling_surv\` object.
 
 - tmax:
 

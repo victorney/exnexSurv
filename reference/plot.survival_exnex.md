@@ -1,4 +1,4 @@
-# Plot survival curves from an exnex_surv fit
+# Plot survival curves from an pooling_surv fit
 
 Draws the posterior median and credible band of the survival function
 for each group. Requires \`ggplot2\`.

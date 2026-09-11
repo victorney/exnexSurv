@@ -69,29 +69,38 @@ mean(sim_data$event)
 
 ``` r
 
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group + age_std,
   data = sim_data,
   iter = 3000,
   warmup = 1000,
   chains = 2,
-  parallel_chains = 2,
+  parallel_chains = TRUE,
   seed = 6841
 )
 
 print(fit, show_trace = FALSE)
-#> <exnex_surv model>
+#> <pooling_surv model>
+#> Pooling: exnex 
 #> Draws: 4000 total post-warmup samples
 #>        2000 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
 #> MCMC: iter = 3000 , warmup = 1000 , chains = 2 
 #> 
-#>  parameter       mean         sd        q05        q50        q95
-#>    theta_1  1.2463566 0.06462694  1.1403574  1.2466079  1.3532442
-#>    theta_2  1.7120960 0.06780666  1.6006020  1.7114203  1.8234427
-#>    theta_3  2.1643972 0.07989574  2.0348217  2.1631064  2.2992832
-#>     beta_1 -0.3834375 0.04700082 -0.4604095 -0.3846512 -0.3059669
-#>     sigma2  0.2321148 0.03015053  0.1875849  0.2298443  0.2862142
+#>  parameter       mean         sd        q05        q50        q95      rhat
+#>    theta_1  1.2463566 0.06462694  1.1403574  1.2466079  1.3532442 1.0002037
+#>    theta_2  1.7120960 0.06780666  1.6006020  1.7114203  1.8234427 1.0005279
+#>    theta_3  2.1643972 0.07989574  2.0348217  2.1631064  2.2992832 0.9998898
+#>     beta_1 -0.3834375 0.04700082 -0.4604095 -0.3846512 -0.3059669 1.0000344
+#>     sigma2  0.2321148 0.03015053  0.1875849  0.2298443  0.2862142 1.0004339
+#>  ess_bulk ess_tail
+#>  3458.452 3692.770
+#>  2552.374 3345.889
+#>  1617.838 2137.126
+#>  1692.638 3002.280
+#>  1746.595 2707.902
+#> 
+#> Convergence: max R-hat =    1 | min ESS = 1617.8
 ```
 
 This fit stores all post-warmup draws in one table. With `chains = 2`,
@@ -190,13 +199,13 @@ preferable.
 ``` r
 
 fit_seeds <- lapply(c(6841, 7313, 8129), function(seed) {
-  exnex_surv(
+  pooling_surv(
     Surv(time, event) ~ group + age_std,
     data = sim_data,
     iter = 3000,
     warmup = 1000,
     chains = 2,
-    parallel_chains = 2,
+    parallel_chains = TRUE,
     seed = seed
   )
 })

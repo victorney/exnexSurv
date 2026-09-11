@@ -1,6 +1,6 @@
-# Shared validation for common exnex_surv arguments
+# Shared validation for common pooling_surv arguments
 
-Shared validation for common exnex_surv arguments
+Shared validation for common pooling_surv arguments
 
 ## Usage
 

@@ -108,11 +108,11 @@ role.
 
 All fields are optional: absent fields keep the defaults and unknown
 fields are ignored. Customize a prior by passing a named list to
-[`exnex_surv()`](https://victorney.github.io/exnexSurv/reference/exnex_surv.md):
+[`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md):
 
 ``` r
 
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group,
   data = d,
   priors = list(
@@ -177,7 +177,7 @@ theta_true <- c(1.5, 1.4, 1.6, 1.45, 1.55, 1.5, -0.4, -0.6, -0.5)
 d <- simulate_basket_data(theta_true, seed = 1)
 
 # small, quick fit just to inspect resolved_priors
-quick <- exnex_surv(
+quick <- pooling_surv(
   Surv(time, event) ~ group + X1 + X2,
   data = d,
   priors = list(p_mix = 0.7, v_nex = 10),
@@ -218,24 +218,72 @@ print(quick$resolved_priors)
 The printed list shows the customized `p_mix` and `v_nex` alongside the
 default values for the fields you did not touch.
 
-### Model variants
+### Pooling variants
 
-The EXNEX hierarchy is flexible enough to recover two familiar
-alternatives, which are useful as references for comparison:
+The same data-augmented Gibbs sampler supports three pooling regimes,
+selected with the `pooling` argument of
+[`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md):
 
-| Setting | Description | How to approximate |
+| `pooling` | Description | Basket-effect prior |
 |----|----|----|
-| **EXNEX** (default) | selective borrowing via latent $`Z_j`$ | the default prior |
-| **EX** (full exchangeability) | all $`\theta_j`$ share $`\mathcal N(\mu,\tau^2)`$ | `p_mix = 0.9999999` |
-| **No pooling** | independent basket effects | `p_mix = 1e-6`, large `v_nex` |
+| **`"exnex"`** (default) | selective borrowing via latent $`Z_j`$ | mixture $`Z_j\,\mathcal N(\mu,\tau^2)+(1-Z_j)\,\mathcal N(m_{0j},v_{0j})`$ |
+| **`"complete"`** | complete pooling: a single shared effect $`\theta`$ | $`\mathcal N(m_{\mu},v_{\mu})`$ (the `m_mu`/`v_mu` priors) |
+| **`"none"`** | no pooling: independent basket effects | $`\mathcal N(m_{0j},v_{0j})`$ independently per basket |
 
-Because the mixture weight is validated to be strictly between 0 and 1,
-a fully exchangeable model is approximated with `p_mix` extremely close
-to 1, and a no-pooling model with `p_mix` extremely close to 0 together
-with a diffuse `v_nex`. Complete pooling (a single shared intercept) is
-*not* directly expressible in the current formula interface, which
-requires at least one right-hand-side variable to identify the group; it
-can be emulated by fitting a single basket.
+In the `"complete"` and `"none"` modes the mixture indicators $`Z_j`$
+and the hyperparameters $`\mu`$, $`\tau^2`$ drop out of the Gibbs scan;
+only the intercept block changes. All EXNEX-specific priors (`p_mix`,
+`a_tau`, `b_tau`) are ignored there, and
+[`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md)
+warns if any of them is supplied:
+
+``` r
+
+fit_complete <- pooling_surv(
+  Surv(time, event) ~ group + X1 + X2, data = d,
+  pooling = "complete",
+  iter = 1000, warmup = 500, chains = 1, seed = 11
+)
+
+fit_no_pool <- pooling_surv(
+  Surv(time, event) ~ group + X1 + X2, data = d,
+  pooling = "none",
+  iter = 1000, warmup = 500, chains = 1, seed = 13
+)
+
+means_of <- function(f) {
+  s <- summary(f)
+  setNames(s$mean, s$parameter)
+}
+compare <- data.frame(
+  truth = theta_true,
+  exnex = means_of(quick)[grepl("^theta_", names(means_of(quick)))],
+  complete = means_of(fit_complete)[grepl("^theta_", names(means_of(fit_complete)))],
+  nopool = means_of(fit_no_pool)[grepl("^theta_", names(means_of(fit_no_pool)))]
+)
+compare
+#>         truth      exnex complete     nopool
+#> theta_1  1.50  1.6534893 1.431037  1.6672324
+#> theta_2  1.40  1.8828911 1.431037  1.9173458
+#> theta_3  1.60  1.7608818 1.431037  1.8281452
+#> theta_4  1.45  1.5351995 1.431037  1.5748048
+#> theta_5  1.55  1.3971858 1.431037  1.4502304
+#> theta_6  1.50  1.8190973 1.431037  1.9075818
+#> theta_7 -0.40 -0.3275430 1.431037 -0.5314129
+#> theta_8 -0.60 -0.1640306 1.431037 -0.3291803
+#> theta_9 -0.50  0.1311328 1.431037 -0.1278544
+```
+
+With `pooling = "complete"` the posterior draws of all `theta_*` columns
+are identical, since the model estimates one shared basket effect;
+`pooling = "none"` gives each basket its own independent estimate. These
+variants are useful references for quantifying how much the EXNEX
+hierarchy borrows across baskets.
+
+An interim approximation remains available through the EXNEX prior
+itself: `p_mix` extremely close to 1 approximates full exchangeability,
+and `p_mix` extremely close to 0 with a diffuse `v_nex` approximates no
+pooling.
 
 ## Data augmentation
 
@@ -308,7 +356,9 @@ to traverse that mixture landscape.
 
 ## The Gibbs sampler
 
-Each iteration performs the following systematic scan.
+Each iteration performs the following systematic scan. Steps 5 and 6
+only run under `pooling = "exnex"`; the other pooling variants collapse
+the scan to steps 1–4.
 
 ``` r
 
@@ -406,9 +456,9 @@ implementation does): the latent indicators $`Z_j`$, the exchangeable
 mean $`\mu`$, and the between-basket variance $`\tau^2`$.
 
 The number of rows in `fit$draws` is $`(iter - warmup)\times chains`$,
-one row per post-warmup iteration per chain. The full `exnex_surv`
+one row per post-warmup iteration per chain. The full `pooling_surv`
 object returned by
-[`exnex_surv()`](https://victorney.github.io/exnexSurv/reference/exnex_surv.md)
+[`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md)
 has the following components:
 
 ``` r
@@ -429,7 +479,7 @@ draws per-parameter traceplots (using `bayesplot`). The low-level kernel
 [`cpp_exnex_gibbs()`](https://victorney.github.io/exnexSurv/reference/cpp_exnex_gibbs.md)
 is also exposed for programmatic use but is intended for advanced users;
 the
-[`exnex_surv()`](https://victorney.github.io/exnexSurv/reference/exnex_surv.md)
+[`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md)
 function handles data preparation, validation, multiple chains, and
 reproducible seeds on top of it.
 
@@ -452,31 +502,47 @@ We fit the EXNEX model with two chains in parallel:
 
 ``` r
 
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group + X1 + X2,
   data = d,
-  iter = 1500, warmup = 750, chains = 2, parallel_chains = 2, seed = 42
+  iter = 1500, warmup = 750, chains = 2, parallel_chains = TRUE, seed = 42
 )
 print(fit, show_trace = FALSE)
-#> <exnex_surv model>
+#> <pooling_surv model>
+#> Pooling: exnex 
 #> Draws: 1500 total post-warmup samples
 #>        750 post-warmup samples per chain
 #> Groups: 9 | Covariates: 2 
 #> MCMC: iter = 1500 , warmup = 750 , chains = 2 
 #> 
-#>  parameter       mean        sd        q05         q50        q95
-#>    theta_1  1.6446482 0.2621898  1.2266220  1.64900902  2.0738019
-#>    theta_2  1.8179920 0.2888510  1.3704760  1.81175632  2.3005433
-#>    theta_3  1.7337071 0.3252604  1.2074354  1.73014932  2.2856673
-#>    theta_4  1.5157022 0.3413546  0.9622640  1.50817949  2.1066713
-#>    theta_5  1.3655601 0.3714221  0.7581575  1.36540753  1.9613142
-#>    theta_6  1.7425843 0.4055059  1.0596356  1.74360820  2.4105329
-#>    theta_7 -0.1835898 0.4796262 -0.9545207 -0.17209279  0.6290550
-#>    theta_8 -0.0645867 0.4774981 -0.8442716 -0.06794569  0.7354811
-#>    theta_9  0.1867690 0.5250931 -0.6681145  0.19578477  1.0776457
-#>     beta_1  0.9987511 0.1619858  0.7389669  0.99840295  1.2802154
-#>     beta_2 -0.6046150 0.1261888 -0.8181472 -0.60070002 -0.3996404
-#>     sigma2  1.8439192 0.2764157  1.4229329  1.82455222  2.3440627
+#>  parameter       mean        sd        q05         q50        q95      rhat
+#>    theta_1  1.6446482 0.2621898  1.2266220  1.64900902  2.0738019 1.0011164
+#>    theta_2  1.8179920 0.2888510  1.3704760  1.81175632  2.3005433 1.0011487
+#>    theta_3  1.7337071 0.3252604  1.2074354  1.73014932  2.2856673 0.9994776
+#>    theta_4  1.5157022 0.3413546  0.9622640  1.50817949  2.1066713 1.0000712
+#>    theta_5  1.3655601 0.3714221  0.7581575  1.36540753  1.9613142 1.0010618
+#>    theta_6  1.7425843 0.4055059  1.0596356  1.74360820  2.4105329 0.9995757
+#>    theta_7 -0.1835898 0.4796262 -0.9545207 -0.17209279  0.6290550 1.0016983
+#>    theta_8 -0.0645867 0.4774981 -0.8442716 -0.06794569  0.7354811 1.0016851
+#>    theta_9  0.1867690 0.5250931 -0.6681145  0.19578477  1.0776457 1.0024171
+#>     beta_1  0.9987511 0.1619858  0.7389669  0.99840295  1.2802154 0.9999116
+#>     beta_2 -0.6046150 0.1261888 -0.8181472 -0.60070002 -0.3996404 1.0000734
+#>     sigma2  1.8439192 0.2764157  1.4229329  1.82455222  2.3440627 1.0012406
+#>   ess_bulk  ess_tail
+#>  1032.1756 1390.4703
+#>   868.5414 1398.1927
+#>   760.9549 1296.8763
+#>  1133.2258 1205.7393
+#>  1013.6454 1324.2219
+#>   965.5664 1198.6342
+#>   963.6081  983.2898
+#>   964.0677 1214.0162
+#>  1250.4165 1414.4130
+#>   849.3407  983.1888
+#>   743.3898 1077.5073
+#>   568.6059  949.8432
+#> 
+#> Convergence: max R-hat =    1 | min ESS = 568.6
 ```
 
 The posterior means and credible intervals show how the sampler borrows
@@ -517,7 +583,7 @@ can express this with basket-specific vectors for `p_mix` and `v_nex`:
 
 ``` r
 
-fit_nex <- exnex_surv(
+fit_nex <- pooling_surv(
   Surv(time, event) ~ group + X1 + X2,
   data = d,
   priors = list(
@@ -537,19 +603,20 @@ deliberately misspecified) assumption. This example is meant to
 illustrate the *mechanics* of basket-specific priors, not to recommend a
 particular prior.
 
-### Comparing EXNEX, EX, and No pooling
+### Comparing EXNEX, EX (approx.), and no pooling (approx.)
 
-As a final illustration, compare the three model variants described
-above by overlaying their posterior basket-effect means:
+As a final illustration, compare the EXNEX fit against the prior-based
+approximations of full exchangeability and no pooling described above by
+overlaying their posterior basket-effect means:
 
 ``` r
 
-fit_ex <- exnex_surv(
+fit_ex <- pooling_surv(
   Surv(time, event) ~ group + X1 + X2, data = d,
   priors = list(p_mix = 0.9999999),       # EX: full borrowing
   iter = 1000, warmup = 500, chains = 1, seed = 11
 )
-fit_np <- exnex_surv(
+fit_np <- pooling_surv(
   Surv(time, event) ~ group + X1 + X2, data = d,
   priors = list(p_mix = 1e-6, v_nex = 1e4),  # No pooling
   iter = 1000, warmup = 500, chains = 1, seed = 13

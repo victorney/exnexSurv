@@ -26,7 +26,7 @@ probability_superiority(
 
 - fit:
 
-  A fitted \`exnex_surv\` object.
+  A fitted \`pooling_surv\` object.
 
 - a:
 

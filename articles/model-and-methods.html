@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exnexSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Practical guides</h6></li>
     <li><a class="dropdown-item" href="../articles/convergence-and-diagnostics.html">Convergence and Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running Chains in Parallel</a></li>
+    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running chains in parallel</a></li>
     <li><a class="dropdown-item" href="../articles/tools-for-experimenters.html">Tools for Experimenters</a></li>
   </ul>
 </li>
@@ -348,9 +348,9 @@ prior
 </table>
 <p>All fields are optional: absent fields keep the defaults and unknown
 fields are ignored. Customize a prior by passing a named list to
-<code><a href="../reference/exnex_surv.html">exnex_surv()</a></code>:</p>
+<code><a href="../reference/pooling_surv.html">pooling_surv()</a></code>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -418,7 +418,7 @@ applied:</p>
 <span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu">simulate_basket_data</span><span class="op">(</span><span class="va">theta_true</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># small, quick fit just to inspect resolved_priors</span></span>
-<span><span class="va">quick</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<span><span class="va">quick</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>p_mix <span class="op">=</span> <span class="fl">0.7</span>, v_nex <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>,</span>
@@ -458,57 +458,105 @@ applied:</p>
 <code>v_nex</code> alongside the default values for the fields you did
 not touch.</p>
 <div class="section level3">
-<h3 id="model-variants">Model variants<a class="anchor" aria-label="anchor" href="#model-variants"></a>
+<h3 id="pooling-variants">Pooling variants<a class="anchor" aria-label="anchor" href="#pooling-variants"></a>
 </h3>
-<p>The EXNEX hierarchy is flexible enough to recover two familiar
-alternatives, which are useful as references for comparison:</p>
+<p>The same data-augmented Gibbs sampler supports three pooling regimes,
+selected with the <code>pooling</code> argument of
+<code><a href="../reference/pooling_surv.html">pooling_surv()</a></code>:</p>
 <table class="table">
 <colgroup>
-<col width="21%">
-<col width="30%">
-<col width="47%">
+<col width="24%">
+<col width="28%">
+<col width="46%">
 </colgroup>
 <thead><tr class="header">
-<th>Setting</th>
+<th><code>pooling</code></th>
 <th>Description</th>
-<th>How to approximate</th>
+<th>Basket-effect prior</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td>
-<strong>EXNEX</strong> (default)</td>
+<strong><code>"exnex"</code></strong> (default)</td>
 <td>selective borrowing via latent
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Z</mi><mi>j</mi></msub><annotation encoding="application/x-tex">Z_j</annotation></semantics></math>
 </td>
-<td>the default prior</td>
+<td>mixture
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Z</mi><mi>j</mi></msub><mspace width="0.167em"></mspace><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mi>μ</mi><mo>,</mo><msup><mi>τ</mi><mn>2</mn></msup><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>Z</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mspace width="0.167em"></mspace><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>m</mi><mrow><mn>0</mn><mi>j</mi></mrow></msub><mo>,</mo><msub><mi>v</mi><mrow><mn>0</mn><mi>j</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Z_j\,\mathcal N(\mu,\tau^2)+(1-Z_j)\,\mathcal N(m_{0j},v_{0j})</annotation></semantics></math>
+</td>
 </tr>
 <tr class="even">
-<td>
-<strong>EX</strong> (full exchangeability)</td>
-<td>all
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>θ</mi><mi>j</mi></msub><annotation encoding="application/x-tex">\theta_j</annotation></semantics></math>
-share
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mi>μ</mi><mo>,</mo><msup><mi>τ</mi><mn>2</mn></msup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathcal N(\mu,\tau^2)</annotation></semantics></math>
+<td><strong><code>"complete"</code></strong></td>
+<td>complete pooling: a single shared effect
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>θ</mi><annotation encoding="application/x-tex">\theta</annotation></semantics></math>
 </td>
-<td><code>p_mix = 0.9999999</code></td>
+<td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>m</mi><mi>μ</mi></msub><mo>,</mo><msub><mi>v</mi><mi>μ</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathcal N(m_{\mu},v_{\mu})</annotation></semantics></math>
+(the <code>m_mu</code>/<code>v_mu</code> priors)</td>
 </tr>
 <tr class="odd">
-<td><strong>No pooling</strong></td>
-<td>independent basket effects</td>
+<td><strong><code>"none"</code></strong></td>
+<td>no pooling: independent basket effects</td>
 <td>
-<code>p_mix = 1e-6</code>, large <code>v_nex</code>
-</td>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>m</mi><mrow><mn>0</mn><mi>j</mi></mrow></msub><mo>,</mo><msub><mi>v</mi><mrow><mn>0</mn><mi>j</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\mathcal N(m_{0j},v_{0j})</annotation></semantics></math>
+independently per basket</td>
 </tr>
 </tbody>
 </table>
-<p>Because the mixture weight is validated to be strictly between 0 and
-1, a fully exchangeable model is approximated with <code>p_mix</code>
-extremely close to 1, and a no-pooling model with <code>p_mix</code>
-extremely close to 0 together with a diffuse <code>v_nex</code>.
-Complete pooling (a single shared intercept) is <em>not</em> directly
-expressible in the current formula interface, which requires at least
-one right-hand-side variable to identify the group; it can be emulated
-by fitting a single basket.</p>
+<p>In the <code>"complete"</code> and <code>"none"</code> modes the
+mixture indicators
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Z</mi><mi>j</mi></msub><annotation encoding="application/x-tex">Z_j</annotation></semantics></math>
+and the hyperparameters
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>τ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\tau^2</annotation></semantics></math>
+drop out of the Gibbs scan; only the intercept block changes. All
+EXNEX-specific priors (<code>p_mix</code>, <code>a_tau</code>,
+<code>b_tau</code>) are ignored there, and <code><a href="../reference/pooling_surv.html">pooling_surv()</a></code>
+warns if any of them is supplied:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_complete</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
+<span>  pooling <span class="op">=</span> <span class="st">"complete"</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">1000</span>, warmup <span class="op">=</span> <span class="fl">500</span>, chains <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">11</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit_no_pool</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
+<span>  pooling <span class="op">=</span> <span class="st">"none"</span>,</span>
+<span>  iter <span class="op">=</span> <span class="fl">1000</span>, warmup <span class="op">=</span> <span class="fl">500</span>, chains <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">13</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">means_of</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">f</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="va">s</span><span class="op">$</span><span class="va">mean</span>, <span class="va">s</span><span class="op">$</span><span class="va">parameter</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="va">compare</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  truth <span class="op">=</span> <span class="va">theta_true</span>,</span>
+<span>  exnex <span class="op">=</span> <span class="fu">means_of</span><span class="op">(</span><span class="va">quick</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^theta_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">means_of</span><span class="op">(</span><span class="va">quick</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>  complete <span class="op">=</span> <span class="fu">means_of</span><span class="op">(</span><span class="va">fit_complete</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^theta_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">means_of</span><span class="op">(</span><span class="va">fit_complete</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span>,</span>
+<span>  nopool <span class="op">=</span> <span class="fu">means_of</span><span class="op">(</span><span class="va">fit_no_pool</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^theta_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">means_of</span><span class="op">(</span><span class="va">fit_no_pool</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">compare</span></span>
+<span><span class="co">#&gt;         truth      exnex complete     nopool</span></span>
+<span><span class="co">#&gt; theta_1  1.50  1.6534893 1.431037  1.6672324</span></span>
+<span><span class="co">#&gt; theta_2  1.40  1.8828911 1.431037  1.9173458</span></span>
+<span><span class="co">#&gt; theta_3  1.60  1.7608818 1.431037  1.8281452</span></span>
+<span><span class="co">#&gt; theta_4  1.45  1.5351995 1.431037  1.5748048</span></span>
+<span><span class="co">#&gt; theta_5  1.55  1.3971858 1.431037  1.4502304</span></span>
+<span><span class="co">#&gt; theta_6  1.50  1.8190973 1.431037  1.9075818</span></span>
+<span><span class="co">#&gt; theta_7 -0.40 -0.3275430 1.431037 -0.5314129</span></span>
+<span><span class="co">#&gt; theta_8 -0.60 -0.1640306 1.431037 -0.3291803</span></span>
+<span><span class="co">#&gt; theta_9 -0.50  0.1311328 1.431037 -0.1278544</span></span></code></pre></div>
+<p>With <code>pooling = "complete"</code> the posterior draws of all
+<code>theta_*</code> columns are identical, since the model estimates
+one shared basket effect; <code>pooling = "none"</code> gives each
+basket its own independent estimate. These variants are useful
+references for quantifying how much the EXNEX hierarchy borrows across
+baskets.</p>
+<p>An interim approximation remains available through the EXNEX prior
+itself: <code>p_mix</code> extremely close to 1 approximates full
+exchangeability, and <code>p_mix</code> extremely close to 0 with a
+diffuse <code>v_nex</code> approximates no pooling.</p>
 </div>
 </div>
 <div class="section level2">
@@ -594,8 +642,10 @@ that mixture landscape.</p>
 <div class="section level2">
 <h2 id="the-gibbs-sampler">The Gibbs sampler<a class="anchor" aria-label="anchor" href="#the-gibbs-sampler"></a>
 </h2>
-<p>Each iteration performs the following systematic scan.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>Each iteration performs the following systematic scan. Steps 5 and 6
+only run under <code>pooling = "exnex"</code>; the other pooling
+variants collapse the scan to steps 1–4.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. Impute censored log-event times z_i ~ TN(log Y_i, Inf)(eta_i, sigma^2)</span></span>
 <span><span class="co"># 2. Update residual variance sigma^2</span></span>
 <span><span class="co"># 3. Update regression coefficients beta</span></span>
@@ -720,21 +770,21 @@ and the between-basket variance
 <p>The number of rows in <code>fit$draws</code> is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mi>t</mi><mi>e</mi><mi>r</mi><mo>−</mo><mi>w</mi><mi>a</mi><mi>r</mi><mi>m</mi><mi>u</mi><mi>p</mi><mo stretchy="false" form="postfix">)</mo><mo>×</mo><mi>c</mi><mi>h</mi><mi>a</mi><mi>i</mi><mi>n</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">(iter - warmup)\times chains</annotation></semantics></math>,
 one row per post-warmup iteration per chain. The full
-<code>exnex_surv</code> object returned by <code><a href="../reference/exnex_surv.html">exnex_surv()</a></code> has
-the following components:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>fit<span class="sc">$</span>draws            <span class="co"># posterior draws, data.frame</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>fit<span class="sc">$</span>data             <span class="co"># time, event, group, X, n, n_groups, n_covariates, cov_names, chain_seeds</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>fit<span class="sc">$</span>priors           <span class="co"># the priors list you supplied</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>fit<span class="sc">$</span>resolved_priors  <span class="co"># defaults merged with your overrides</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>fit<span class="sc">$</span>iter, fit<span class="sc">$</span>warmup, fit<span class="sc">$</span>chains   <span class="co"># MCMC settings</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>fit<span class="sc">$</span>blueprint        <span class="co"># hardhat blueprint for the formula / data</span></span></code></pre></div>
+<code>pooling_surv</code> object returned by <code><a href="../reference/pooling_surv.html">pooling_surv()</a></code>
+has the following components:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>fit<span class="sc">$</span>draws            <span class="co"># posterior draws, data.frame</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>fit<span class="sc">$</span>data             <span class="co"># time, event, group, X, n, n_groups, n_covariates, cov_names, chain_seeds</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>fit<span class="sc">$</span>priors           <span class="co"># the priors list you supplied</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>fit<span class="sc">$</span>resolved_priors  <span class="co"># defaults merged with your overrides</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>fit<span class="sc">$</span>iter, fit<span class="sc">$</span>warmup, fit<span class="sc">$</span>chains   <span class="co"># MCMC settings</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>fit<span class="sc">$</span>blueprint        <span class="co"># hardhat blueprint for the formula / data</span></span></code></pre></div>
 <p>Three S3 methods are provided: <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> gives a compact
 summary, <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> returns a data frame of posterior means,
 standard deviations, and credible intervals per parameter, and
 <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> draws per-parameter traceplots (using
 <code>bayesplot</code>). The low-level kernel
 <code><a href="../reference/cpp_exnex_gibbs.html">cpp_exnex_gibbs()</a></code> is also exposed for programmatic use but
-is intended for advanced users; the <code><a href="../reference/exnex_surv.html">exnex_surv()</a></code> function
+is intended for advanced users; the <code><a href="../reference/pooling_surv.html">pooling_surv()</a></code> function
 handles data preparation, validation, multiple chains, and reproducible
 seeds on top of it.</p>
 </div>
@@ -745,43 +795,59 @@ seeds on top of it.</p>
 resistant outlier baskets. Baskets 1–6 are responsive (true
 log-locations near a common positive mean), while baskets 7–9 are
 resistant outliers well below the majority.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">theta_true</span></span>
 <span><span class="co">#&gt; [1]  1.50  1.40  1.60  1.45  1.55  1.50 -0.40 -0.60 -0.50</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">d</span><span class="op">$</span><span class="va">event</span><span class="op">)</span>  <span class="co"># realized censoring proportion</span></span>
 <span><span class="co">#&gt; [1] 0.6962963</span></span></code></pre></div>
 <p>We fit the EXNEX model with two chains in parallel:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">d</span>,</span>
-<span>  iter <span class="op">=</span> <span class="fl">1500</span>, warmup <span class="op">=</span> <span class="fl">750</span>, chains <span class="op">=</span> <span class="fl">2</span>, parallel_chains <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">42</span></span>
+<span>  iter <span class="op">=</span> <span class="fl">1500</span>, warmup <span class="op">=</span> <span class="fl">750</span>, chains <span class="op">=</span> <span class="fl">2</span>, parallel_chains <span class="op">=</span> <span class="cn">TRUE</span>, seed <span class="op">=</span> <span class="fl">42</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span>, show_trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;exnex_surv model&gt;</span></span>
+<span><span class="co">#&gt; &lt;pooling_surv model&gt;</span></span>
+<span><span class="co">#&gt; Pooling: exnex </span></span>
 <span><span class="co">#&gt; Draws: 1500 total post-warmup samples</span></span>
 <span><span class="co">#&gt;        750 post-warmup samples per chain</span></span>
 <span><span class="co">#&gt; Groups: 9 | Covariates: 2 </span></span>
 <span><span class="co">#&gt; MCMC: iter = 1500 , warmup = 750 , chains = 2 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  parameter       mean        sd        q05         q50        q95</span></span>
-<span><span class="co">#&gt;    theta_1  1.6446482 0.2621898  1.2266220  1.64900902  2.0738019</span></span>
-<span><span class="co">#&gt;    theta_2  1.8179920 0.2888510  1.3704760  1.81175632  2.3005433</span></span>
-<span><span class="co">#&gt;    theta_3  1.7337071 0.3252604  1.2074354  1.73014932  2.2856673</span></span>
-<span><span class="co">#&gt;    theta_4  1.5157022 0.3413546  0.9622640  1.50817949  2.1066713</span></span>
-<span><span class="co">#&gt;    theta_5  1.3655601 0.3714221  0.7581575  1.36540753  1.9613142</span></span>
-<span><span class="co">#&gt;    theta_6  1.7425843 0.4055059  1.0596356  1.74360820  2.4105329</span></span>
-<span><span class="co">#&gt;    theta_7 -0.1835898 0.4796262 -0.9545207 -0.17209279  0.6290550</span></span>
-<span><span class="co">#&gt;    theta_8 -0.0645867 0.4774981 -0.8442716 -0.06794569  0.7354811</span></span>
-<span><span class="co">#&gt;    theta_9  0.1867690 0.5250931 -0.6681145  0.19578477  1.0776457</span></span>
-<span><span class="co">#&gt;     beta_1  0.9987511 0.1619858  0.7389669  0.99840295  1.2802154</span></span>
-<span><span class="co">#&gt;     beta_2 -0.6046150 0.1261888 -0.8181472 -0.60070002 -0.3996404</span></span>
-<span><span class="co">#&gt;     sigma2  1.8439192 0.2764157  1.4229329  1.82455222  2.3440627</span></span></code></pre></div>
+<span><span class="co">#&gt;  parameter       mean        sd        q05         q50        q95      rhat</span></span>
+<span><span class="co">#&gt;    theta_1  1.6446482 0.2621898  1.2266220  1.64900902  2.0738019 1.0011164</span></span>
+<span><span class="co">#&gt;    theta_2  1.8179920 0.2888510  1.3704760  1.81175632  2.3005433 1.0011487</span></span>
+<span><span class="co">#&gt;    theta_3  1.7337071 0.3252604  1.2074354  1.73014932  2.2856673 0.9994776</span></span>
+<span><span class="co">#&gt;    theta_4  1.5157022 0.3413546  0.9622640  1.50817949  2.1066713 1.0000712</span></span>
+<span><span class="co">#&gt;    theta_5  1.3655601 0.3714221  0.7581575  1.36540753  1.9613142 1.0010618</span></span>
+<span><span class="co">#&gt;    theta_6  1.7425843 0.4055059  1.0596356  1.74360820  2.4105329 0.9995757</span></span>
+<span><span class="co">#&gt;    theta_7 -0.1835898 0.4796262 -0.9545207 -0.17209279  0.6290550 1.0016983</span></span>
+<span><span class="co">#&gt;    theta_8 -0.0645867 0.4774981 -0.8442716 -0.06794569  0.7354811 1.0016851</span></span>
+<span><span class="co">#&gt;    theta_9  0.1867690 0.5250931 -0.6681145  0.19578477  1.0776457 1.0024171</span></span>
+<span><span class="co">#&gt;     beta_1  0.9987511 0.1619858  0.7389669  0.99840295  1.2802154 0.9999116</span></span>
+<span><span class="co">#&gt;     beta_2 -0.6046150 0.1261888 -0.8181472 -0.60070002 -0.3996404 1.0000734</span></span>
+<span><span class="co">#&gt;     sigma2  1.8439192 0.2764157  1.4229329  1.82455222  2.3440627 1.0012406</span></span>
+<span><span class="co">#&gt;   ess_bulk  ess_tail</span></span>
+<span><span class="co">#&gt;  1032.1756 1390.4703</span></span>
+<span><span class="co">#&gt;   868.5414 1398.1927</span></span>
+<span><span class="co">#&gt;   760.9549 1296.8763</span></span>
+<span><span class="co">#&gt;  1133.2258 1205.7393</span></span>
+<span><span class="co">#&gt;  1013.6454 1324.2219</span></span>
+<span><span class="co">#&gt;   965.5664 1198.6342</span></span>
+<span><span class="co">#&gt;   963.6081  983.2898</span></span>
+<span><span class="co">#&gt;   964.0677 1214.0162</span></span>
+<span><span class="co">#&gt;  1250.4165 1414.4130</span></span>
+<span><span class="co">#&gt;   849.3407  983.1888</span></span>
+<span><span class="co">#&gt;   743.3898 1077.5073</span></span>
+<span><span class="co">#&gt;   568.6059  949.8432</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Convergence: max R-hat =    1 | min ESS = 568.6</span></span></code></pre></div>
 <p>The posterior means and credible intervals show how the sampler
 borrows information. The responsive baskets are estimated close to their
 shared value, while the resistant baskets are partially shrunk toward
 the majority but remain clearly distinct from it:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summ</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="va">th</span> <span class="op">&lt;-</span> <span class="va">summ</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"^theta_"</span>, <span class="va">summ</span><span class="op">$</span><span class="va">parameter</span><span class="op">)</span>, <span class="op">]</span></span>
 <span><span class="va">th</span><span class="op">$</span><span class="va">true</span> <span class="op">&lt;-</span> <span class="va">theta_true</span></span>
@@ -808,8 +874,8 @@ variance for discordant baskets but does not eliminate shrinkage.</p>
 a priori</em> with a strong prior, so that they are not allowed to
 borrow. We can express this with basket-specific vectors for
 <code>p_mix</code> and <code>v_nex</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_nex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_nex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -830,17 +896,18 @@ misspecified) assumption. This example is meant to illustrate the
 particular prior.</p>
 </div>
 <div class="section level3">
-<h3 id="comparing-exnex-ex-and-no-pooling">Comparing EXNEX, EX, and No pooling<a class="anchor" aria-label="anchor" href="#comparing-exnex-ex-and-no-pooling"></a>
+<h3 id="comparing-exnex-ex-approx--and-no-pooling-approx-">Comparing EXNEX, EX (approx.), and no pooling (approx.)<a class="anchor" aria-label="anchor" href="#comparing-exnex-ex-approx--and-no-pooling-approx-"></a>
 </h3>
-<p>As a final illustration, compare the three model variants described
-above by overlaying their posterior basket-effect means:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<p>As a final illustration, compare the EXNEX fit against the
+prior-based approximations of full exchangeability and no pooling
+described above by overlaying their posterior basket-effect means:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_ex</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>p_mix <span class="op">=</span> <span class="fl">0.9999999</span><span class="op">)</span>,       <span class="co"># EX: full borrowing</span></span>
 <span>  iter <span class="op">=</span> <span class="fl">1000</span>, warmup <span class="op">=</span> <span class="fl">500</span>, chains <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">11</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">fit_np</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<span><span class="va">fit_np</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">X1</span> <span class="op">+</span> <span class="va">X2</span>, data <span class="op">=</span> <span class="va">d</span>,</span>
 <span>  priors <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>p_mix <span class="op">=</span> <span class="fl">1e-6</span>, v_nex <span class="op">=</span> <span class="fl">1e4</span><span class="op">)</span>,  <span class="co"># No pooling</span></span>
 <span>  iter <span class="op">=</span> <span class="fl">1000</span>, warmup <span class="op">=</span> <span class="fl">500</span>, chains <span class="op">=</span> <span class="fl">1</span>, seed <span class="op">=</span> <span class="fl">13</span></span>

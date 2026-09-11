@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exnexSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Practical guides</h6></li>
     <li><a class="dropdown-item" href="../articles/convergence-and-diagnostics.html">Convergence and Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running Chains in Parallel</a></li>
+    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running chains in parallel</a></li>
     <li><a class="dropdown-item" href="../articles/tools-for-experimenters.html">Tools for Experimenters</a></li>
   </ul>
 </li>
@@ -150,29 +150,38 @@ combine:</p>
 <h2 id="fit-multiple-chains">Fit multiple chains<a class="anchor" aria-label="anchor" href="#fit-multiple-chains"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">age_std</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">sim_data</span>,</span>
 <span>  iter <span class="op">=</span> <span class="fl">3000</span>,</span>
 <span>  warmup <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  chains <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  parallel_chains <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  parallel_chains <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="fl">6841</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">fit</span>, show_trace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;exnex_surv model&gt;</span></span>
+<span><span class="co">#&gt; &lt;pooling_surv model&gt;</span></span>
+<span><span class="co">#&gt; Pooling: exnex </span></span>
 <span><span class="co">#&gt; Draws: 4000 total post-warmup samples</span></span>
 <span><span class="co">#&gt;        2000 post-warmup samples per chain</span></span>
 <span><span class="co">#&gt; Groups: 3 | Covariates: 1 </span></span>
 <span><span class="co">#&gt; MCMC: iter = 3000 , warmup = 1000 , chains = 2 </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  parameter       mean         sd        q05        q50        q95</span></span>
-<span><span class="co">#&gt;    theta_1  1.2463566 0.06462694  1.1403574  1.2466079  1.3532442</span></span>
-<span><span class="co">#&gt;    theta_2  1.7120960 0.06780666  1.6006020  1.7114203  1.8234427</span></span>
-<span><span class="co">#&gt;    theta_3  2.1643972 0.07989574  2.0348217  2.1631064  2.2992832</span></span>
-<span><span class="co">#&gt;     beta_1 -0.3834375 0.04700082 -0.4604095 -0.3846512 -0.3059669</span></span>
-<span><span class="co">#&gt;     sigma2  0.2321148 0.03015053  0.1875849  0.2298443  0.2862142</span></span></code></pre></div>
+<span><span class="co">#&gt;  parameter       mean         sd        q05        q50        q95      rhat</span></span>
+<span><span class="co">#&gt;    theta_1  1.2463566 0.06462694  1.1403574  1.2466079  1.3532442 1.0002037</span></span>
+<span><span class="co">#&gt;    theta_2  1.7120960 0.06780666  1.6006020  1.7114203  1.8234427 1.0005279</span></span>
+<span><span class="co">#&gt;    theta_3  2.1643972 0.07989574  2.0348217  2.1631064  2.2992832 0.9998898</span></span>
+<span><span class="co">#&gt;     beta_1 -0.3834375 0.04700082 -0.4604095 -0.3846512 -0.3059669 1.0000344</span></span>
+<span><span class="co">#&gt;     sigma2  0.2321148 0.03015053  0.1875849  0.2298443  0.2862142 1.0004339</span></span>
+<span><span class="co">#&gt;  ess_bulk ess_tail</span></span>
+<span><span class="co">#&gt;  3458.452 3692.770</span></span>
+<span><span class="co">#&gt;  2552.374 3345.889</span></span>
+<span><span class="co">#&gt;  1617.838 2137.126</span></span>
+<span><span class="co">#&gt;  1692.638 3002.280</span></span>
+<span><span class="co">#&gt;  1746.595 2707.902</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Convergence: max R-hat =    1 | min ESS = 1617.8</span></span></code></pre></div>
 <p>This fit stores all post-warmup draws in one table. With
 <code>chains = 2</code>, each chain contributes the same number of
 post-warmup iterations, so chain-aware diagnostics can reconstruct the
@@ -261,13 +270,13 @@ preferable.</p>
 </h2>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_seeds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6841</span>, <span class="fl">7313</span>, <span class="fl">8129</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">seed</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/exnex_surv.html">exnex_surv</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/pooling_surv.html">pooling_surv</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/pkg/survival/man/Surv.html" class="external-link">Surv</a></span><span class="op">(</span><span class="va">time</span>, <span class="va">event</span><span class="op">)</span> <span class="op">~</span> <span class="va">group</span> <span class="op">+</span> <span class="va">age_std</span>,</span>
 <span>    data <span class="op">=</span> <span class="va">sim_data</span>,</span>
 <span>    iter <span class="op">=</span> <span class="fl">3000</span>,</span>
 <span>    warmup <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>    chains <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>    parallel_chains <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>    parallel_chains <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    seed <span class="op">=</span> <span class="va">seed</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>

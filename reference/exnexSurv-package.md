@@ -1,8 +1,10 @@
 # exnexSurv: Bayesian EXNEX Models for Survival Analysis in Basket Trials
 
-Fits Bayesian Exchangeable–Non-Exchangeable (EXNEX) survival models for
-right-censored log-normal data in basket trials using a fast,
-data-augmented Gibbs sampler written in C++ (Rcpp/RcppArmadillo).
+Fits Bayesian pooling models for right-censored log-normal data in
+basket trials using a fast, data-augmented Gibbs sampler written in C++
+(Rcpp/RcppArmadillo): the EXNEX hierarchy (\`pooling = "exnex"\`),
+complete pooling (\`pooling = "complete"\`), and no pooling (\`pooling =
+"none"\`).
 
 For patient \\i\\, \\\log T_i=\theta\_{g\[i\]}+X_i^{\mathsf T}\beta+
 \varepsilon_i\\ with \\\varepsilon_i\sim\mathcal N(0,\sigma^2)\\. A
@@ -15,7 +17,7 @@ makes every full conditional conjugate and the systematic Gibbs scan
 exact.
 
 The main entry point is
-[`exnex_surv()`](https://victorney.github.io/exnexSurv/reference/exnex_surv.md).
+[`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md).
 See the package vignette *The EXNEX Model, Priors, and Data
 Augmentation* for a full presentation of the model, the priors, and the
 sampler.
@@ -32,10 +34,10 @@ Association*, 82(398), 528–540.
 
 ## See also
 
-[`exnex_surv`](https://victorney.github.io/exnexSurv/reference/exnex_surv.md),
-[`summary.exnex_surv`](https://victorney.github.io/exnexSurv/reference/summary.exnex_surv.md),
-[`print.exnex_surv`](https://victorney.github.io/exnexSurv/reference/print.exnex_surv.md),
-[`plot.exnex_surv`](https://victorney.github.io/exnexSurv/reference/plot.exnex_surv.md)
+[`pooling_surv`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md),
+[`summary.pooling_surv`](https://victorney.github.io/exnexSurv/reference/summary.pooling_surv.md),
+[`print.pooling_surv`](https://victorney.github.io/exnexSurv/reference/print.pooling_surv.md),
+[`plot.pooling_surv`](https://victorney.github.io/exnexSurv/reference/plot.pooling_surv.md)
 
 ## Author
 

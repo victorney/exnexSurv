@@ -1,7 +1,7 @@
-# Pointwise log-likelihood and WAIC from an exnex_surv fit
+# Pointwise log-likelihood and WAIC from an pooling_surv fit
 
 Computes the Watanabe-Akaike Information Criterion (WAIC) for a fitted
-\`exnex_surv\` model. WAIC is a fully Bayesian information criterion
+\`pooling_surv\` model. WAIC is a fully Bayesian information criterion
 that uses the posterior draws of the log-likelihood and adds a penalty
 for effective number of parameters \\p\_{waic}\\.
 
@@ -15,7 +15,7 @@ compute_waic(fit, ...)
 
 - fit:
 
-  A fitted \`exnex_surv\` object.
+  A fitted \`pooling_surv\` object.
 
 - ...:
 

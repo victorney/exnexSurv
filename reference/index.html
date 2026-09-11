@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exnexSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,7 +27,7 @@
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Practical guides</h6></li>
     <li><a class="dropdown-item" href="../articles/convergence-and-diagnostics.html">Convergence and Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running Chains in Parallel</a></li>
+    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running chains in parallel</a></li>
     <li><a class="dropdown-item" href="../articles/tools-for-experimenters.html">Tools for Experimenters</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/victorney/exnexSurv"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -51,7 +51,7 @@
     <div class="section level2">
       <h2 id="fitting">Fitting<a class="anchor" aria-label="anchor" href="#fitting"></a></h2>
 
-      <div class="section-desc"><p>Fit an EXNEX survival model to right-censored data.</p></div>
+      <div class="section-desc"><p>Fit a Bayesian pooling survival model: EXNEX (<code>pooling = "exnex"</code>), complete pooling (<code>"complete"</code>), or no pooling (<code>"none"</code>).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -60,10 +60,17 @@
 
       <dl><dt>
 
+          <code><a href="pooling_surv.html">pooling_surv()</a></code>
+
+        </dt>
+        <dd>Fit Bayesian Pooling Survival Models</dd>
+
+        <dt>
+
           <code><a href="exnex_surv.html">exnex_surv()</a></code>
 
         </dt>
-        <dd>Fit Bayesian EXNEX Survival Models</dd>
+        <dd>Deprecated alias for EXNEX fitting</dd>
       </dl></div><div class="section level2">
       <h2 id="inference-and-model-selection">Inference and model selection<a class="anchor" aria-label="anchor" href="#inference-and-model-selection"></a></h2>
 
@@ -79,14 +86,14 @@
           <code><a href="survival_curves.html">survival_curves()</a></code>
 
         </dt>
-        <dd>Survival curves from an exnex_surv fit</dd>
+        <dd>Survival curves from an pooling_surv fit</dd>
 
         <dt>
 
           <code><a href="plot.survival_exnex.html">plot(<i>&lt;survival_exnex&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot survival curves from an exnex_surv fit</dd>
+        <dd>Plot survival curves from an pooling_surv fit</dd>
 
         <dt>
 
@@ -100,21 +107,21 @@
           <code><a href="rmst.html">rmst()</a></code>
 
         </dt>
-        <dd>Restricted mean survival time (RMST) from an exnex_surv fit</dd>
+        <dd>Restricted mean survival time (RMST) from an pooling_surv fit</dd>
 
         <dt>
 
           <code><a href="compute_waic.html">compute_waic()</a></code>
 
         </dt>
-        <dd>Pointwise log-likelihood and WAIC from an exnex_surv fit</dd>
+        <dd>Pointwise log-likelihood and WAIC from an pooling_surv fit</dd>
 
         <dt>
 
           <code><a href="compare_waic.html">compare_waic()</a></code>
 
         </dt>
-        <dd>Compare multiple exnex_surv fits by WAIC</dd>
+        <dd>Compare multiple pooling_surv fits by WAIC</dd>
 
         <dt>
 
@@ -125,14 +132,28 @@
 
         <dt>
 
+          <code><a href="rank_probabilities.html">rank_probabilities()</a></code>
+
+        </dt>
+        <dd>Posterior rank probabilities for each group</dd>
+
+        <dt>
+
+          <code><a href="convergence_diagnostics.html">convergence_diagnostics()</a></code>
+
+        </dt>
+        <dd>Convergence diagnostics (R-hat and effective sample size)</dd>
+
+        <dt>
+
           <code><a href="simulate_data.html">simulate_data()</a></code>
 
         </dt>
         <dd>Simulate basket-trial log-normal survival data</dd>
       </dl></div><div class="section level2">
-      <h2 id="methods-for-fitted-objects">Methods for fitted objects<a class="anchor" aria-label="anchor" href="#methods-for-fitted-objects"></a></h2>
+      <h2 id="model-checking-and-visuals">Model checking and visuals<a class="anchor" aria-label="anchor" href="#model-checking-and-visuals"></a></h2>
 
-      <div class="section-desc"><p>Summarise, print, and plot fitted <code>exnex_surv</code> objects.</p></div>
+      <div class="section-desc"><p>Posterior predictive checks and shrinkage diagnostics for fitted <code>pooling_surv</code> objects.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -141,24 +162,47 @@
 
       <dl><dt>
 
-          <code><a href="summary.exnex_surv.html">summary(<i>&lt;exnex_surv&gt;</i>)</a></code>
+          <code><a href="posterior_predictive_check.html">posterior_predictive_check()</a></code>
 
         </dt>
-        <dd>Summarize posterior draws from an exnex_surv fit</dd>
+        <dd>Posterior predictive survival curves</dd>
 
         <dt>
 
-          <code><a href="print.exnex_surv.html">print(<i>&lt;exnex_surv&gt;</i>)</a></code>
+          <code><a href="shrinkage_plot.html">shrinkage_plot()</a></code>
 
         </dt>
-        <dd>Print an exnex_surv fit</dd>
+        <dd>Visualize shrinkage of group effects</dd>
+      </dl></div><div class="section level2">
+      <h2 id="methods-for-fitted-objects">Methods for fitted objects<a class="anchor" aria-label="anchor" href="#methods-for-fitted-objects"></a></h2>
+
+      <div class="section-desc"><p>Summarise, print, and plot fitted <code>pooling_surv</code> objects.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="summary.pooling_surv.html">summary(<i>&lt;pooling_surv&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarize posterior draws from an pooling_surv fit</dd>
 
         <dt>
 
-          <code><a href="plot.exnex_surv.html">plot(<i>&lt;exnex_surv&gt;</i>)</a></code>
+          <code><a href="print.pooling_surv.html">print(<i>&lt;pooling_surv&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot parameter traces from an exnex_surv fit</dd>
+        <dd>Print an pooling_surv fit</dd>
+
+        <dt>
+
+          <code><a href="plot.pooling_surv.html">plot(<i>&lt;pooling_surv&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot parameter traces from an pooling_surv fit</dd>
       </dl></div><div class="section level2">
       <h2 id="internal-functions">Internal functions<a class="anchor" aria-label="anchor" href="#internal-functions"></a></h2>
 
@@ -178,17 +222,17 @@
 
         <dt>
 
-          <code><a href="exnex_surv_bridge.html">exnex_surv_bridge()</a></code>
+          <code><a href="pooling_surv_bridge.html">pooling_surv_bridge()</a></code>
 
         </dt>
         <dd>Bridge connecting hardhat processed data to the C++ Gibbs Sampler</dd>
 
         <dt>
 
-          <code><a href="new_exnex_surv.html">new_exnex_surv()</a></code>
+          <code><a href="new_pooling_surv.html">new_pooling_surv()</a></code>
 
         </dt>
-        <dd>Constructor for exnex_surv Objects</dd>
+        <dd>Constructor for pooling_surv Objects</dd>
 
         <dt>
 
@@ -213,14 +257,14 @@
 
         <dt>
 
-          <code><a href="dot-run_chains_parallel_exnex.html">.run_chains_parallel_exnex()</a></code>
+          <code><a href="dot-run_chains_parallel_pooling.html">.run_chains_parallel_pooling()</a></code>
 
         </dt>
-        <dd>Run multiple chains in parallel via PSOCK workers</dd>
+        <dd>Run all chains concurrently on future workers</dd>
 
         <dt>
 
-          <code><a href="dot-run_single_chain_exnex.html">.run_single_chain_exnex()</a></code>
+          <code><a href="dot-run_single_chain_pooling.html">.run_single_chain_pooling()</a></code>
 
         </dt>
         <dd>Run a single chain by calling the C++ kernel once</dd>

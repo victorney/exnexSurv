@@ -2,7 +2,7 @@
 
 Beyond fitting, `exnexSurv` provides a small set of inference and
 model-selection utilities that operate directly on the posterior draws
-already stored in a fitted `exnex_surv` object. This vignette walks
+already stored in a fitted `pooling_surv` object. This vignette walks
 through each of them using a small simulated example.
 
 ## A quick simulated example
@@ -58,7 +58,7 @@ quickly; for real work use more iterations and multiple chains.
 
 ``` r
 
-fit <- exnex_surv(
+fit <- pooling_surv(
   Surv(time, event) ~ group + x1,
   data = d,
   iter = 2000,
@@ -67,24 +67,39 @@ fit <- exnex_surv(
   seed = 7
 )
 print(fit, show_trace = FALSE)
-#> <exnex_surv model>
+#> <pooling_surv model>
+#> Pooling: exnex 
 #> Draws: 2000 total post-warmup samples
 #>        1000 post-warmup samples per chain
 #> Groups: 9 | Covariates: 1 
 #> MCMC: iter = 2000 , warmup = 1000 , chains = 2 
 #> 
-#>  parameter        mean        sd        q05         q50        q95
-#>    theta_1  0.11669485 0.3069765 -0.3559653  0.10164526  0.6594590
-#>    theta_2 -0.93329406 0.2705633 -1.3614140 -0.94103137 -0.4745091
-#>    theta_3 -0.39262307 0.3118125 -0.8972846 -0.39517207  0.1279407
-#>    theta_4  0.32611057 0.3096740 -0.1786917  0.31792317  0.8508286
-#>    theta_5 -0.06263464 0.2780822 -0.5129246 -0.07036695  0.3991122
-#>    theta_6  0.18591764 0.3207427 -0.3435120  0.18593333  0.7207398
-#>    theta_7  0.22624399 0.3367305 -0.3136029  0.22118365  0.7945553
-#>    theta_8 -0.81203876 0.2875932 -1.2800821 -0.81498863 -0.3578141
-#>    theta_9 -0.01260007 0.3443596 -0.5723189 -0.02049141  0.5682546
-#>     beta_1  0.58664689 0.1243464  0.3808375  0.58879860  0.7866019
-#>     sigma2  1.45675160 0.2336813  1.1254281  1.43078082  1.8681451
+#>  parameter        mean        sd        q05         q50        q95      rhat
+#>    theta_1  0.11669485 0.3069765 -0.3559653  0.10164526  0.6594590 0.9999671
+#>    theta_2 -0.93329406 0.2705633 -1.3614140 -0.94103137 -0.4745091 0.9997708
+#>    theta_3 -0.39262307 0.3118125 -0.8972846 -0.39517207  0.1279407 0.9998223
+#>    theta_4  0.32611057 0.3096740 -0.1786917  0.31792317  0.8508286 1.0000792
+#>    theta_5 -0.06263464 0.2780822 -0.5129246 -0.07036695  0.3991122 1.0007271
+#>    theta_6  0.18591764 0.3207427 -0.3435120  0.18593333  0.7207398 1.0013532
+#>    theta_7  0.22624399 0.3367305 -0.3136029  0.22118365  0.7945553 1.0036246
+#>    theta_8 -0.81203876 0.2875932 -1.2800821 -0.81498863 -0.3578141 1.0004449
+#>    theta_9 -0.01260007 0.3443596 -0.5723189 -0.02049141  0.5682546 0.9999890
+#>     beta_1  0.58664689 0.1243464  0.3808375  0.58879860  0.7866019 1.0003532
+#>     sigma2  1.45675160 0.2336813  1.1254281  1.43078082  1.8681451 1.0014806
+#>   ess_bulk  ess_tail
+#>   985.1951 1360.9958
+#>  1294.0195 1808.7330
+#>   941.3412 1275.7780
+#>  1052.4902 1358.4968
+#>  1113.2750 1298.6132
+#>   841.7601 1464.7546
+#>   681.1668 1130.6408
+#>  1182.8063 1608.6092
+#>   679.8265 1141.9648
+#>   793.1829 1221.2555
+#>   460.6929  755.8611
+#> 
+#> Convergence: max R-hat =    1 | min ESS = 460.7
 ```
 
 ## Survival curves
@@ -193,7 +208,7 @@ returns them ordered by ascending WAIC:
 
 ``` r
 
-fit_group <- exnex_surv(
+fit_group <- pooling_surv(
   Surv(time, event) ~ group,
   data = d,
   iter = 2000, warmup = 1000, chains = 2, seed = 7

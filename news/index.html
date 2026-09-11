@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">exnexSurv</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,7 +27,7 @@
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Practical guides</h6></li>
     <li><a class="dropdown-item" href="../articles/convergence-and-diagnostics.html">Convergence and Diagnostics</a></li>
-    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running Chains in Parallel</a></li>
+    <li><a class="dropdown-item" href="../articles/parallel-chains.html">Running chains in parallel</a></li>
     <li><a class="dropdown-item" href="../articles/tools-for-experimenters.html">Tools for Experimenters</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/victorney/exnexSurv"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -50,6 +50,43 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.0" id="exnexsurv-140">exnexSurv 1.4.0<a class="anchor" aria-label="anchor" href="#exnexsurv-140"></a></h2>
+<div class="section level3">
+<h3 id="new-features-1-4-0">New features<a class="anchor" aria-label="anchor" href="#new-features-1-4-0"></a></h3>
+<ul><li>
+<code><a href="../reference/pooling_surv.html">pooling_surv()</a></code> is the new general entry point for fitting Bayesian pooling models for right-censored log-normal survival data. It runs the same data-augmented Gibbs sampler under three pooling modes, selected with the new <code>pooling</code> argument:
+<ul><li>
+<code>pooling = "exnex"</code> — the EXNEX hierarchy (default, as in previous releases);</li>
+<li>
+<code>pooling = "complete"</code> — a single shared basket effect with prior <code>N(m_mu, v_mu)</code> (complete pooling);</li>
+<li>
+<code>pooling = "none"</code> — independent basket effects with priors <code>N(m_nex_j, v_nex_j)</code> (no pooling).</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="deprecation-soft-1-4-0">Deprecation (soft)<a class="anchor" aria-label="anchor" href="#deprecation-soft-1-4-0"></a></h3>
+<ul><li>
+<code><a href="../reference/exnex_surv.html">exnex_surv()</a></code> is deprecated in favour of <code><a href="../reference/pooling_surv.html">pooling_surv()</a></code>; it now emits a one-line deprecation message and forces <code>pooling = "exnex"</code>. All existing calls continue to work.</li>
+<li>Fitted objects are of class <code>"pooling_surv"</code>; all methods (<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>, <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code>, <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>, <code><a href="../reference/survival_curves.html">survival_curves()</a></code>, <code><a href="../reference/median_survival.html">median_survival()</a></code>, <code><a href="../reference/rmst.html">rmst()</a></code>, <code><a href="../reference/probability_superiority.html">probability_superiority()</a></code>, <code><a href="../reference/compute_waic.html">compute_waic()</a></code>, <code><a href="../reference/compare_waic.html">compare_waic()</a></code>) accept them.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="other-1-4-0">Other<a class="anchor" aria-label="anchor" href="#other-1-4-0"></a></h3>
+<ul><li>Priors that are irrelevant for the chosen <code>pooling</code> mode (e.g. <code>p_mix</code> under <code>"complete"</code> or <code>"none"</code>) now trigger a warning naming the ignored fields.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> output now labels the fitted pooling variant.</li>
+<li>New <code>verbose</code> argument in <code><a href="../reference/pooling_surv.html">pooling_surv()</a></code> (default <code>TRUE</code>): a live progress bar (<code>progressr</code>) reports progress while the chains run; silenced with <code>verbose = FALSE</code>.</li>
+<li>
+<code><a href="../reference/compare_waic.html">compare_waic()</a></code> now names rows with the argument names used in the call (e.g. <code>fit_exnex</code>) instead of the anonymous <code>fit1</code>/<code>fit2</code> labels; when no informative name is available it falls back to the fitted <code>pooling</code> variant.</li>
+<li>
+<code>parallel_chains</code> in <code><a href="../reference/pooling_surv.html">pooling_surv()</a></code> is now a logical flag: <code>TRUE</code> runs all chains concurrently on background sessions through the <code>future</code> framework (progress from workers is relayed to your console, so it works in RStudio too); <code>FALSE</code> (default) runs chains sequentially.</li>
+<li>With <code>verbose = TRUE</code>, a live progress bar (<code>progressr</code>) now updates while the chains run, in both sequential and parallel execution; the per-chain text lines were removed.</li>
+<li>New <code><a href="../reference/convergence_diagnostics.html">convergence_diagnostics()</a></code> computes split R-hat, bulk ESS and tail ESS per parameter; <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code>/<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> now include these columns and a one-line convergence verdict automatically.</li>
+<li>New <code><a href="../reference/rank_probabilities.html">rank_probabilities()</a></code> gives the posterior probability of each rank position per basket (median survival, <code>S(t_0)</code>, or RMST summaries).</li>
+<li>New <code><a href="../reference/posterior_predictive_check.html">posterior_predictive_check()</a></code> overlays the posterior predictive mean survival curve with the observed Kaplan-Meier curve per basket.</li>
+<li>New <code><a href="../reference/shrinkage_plot.html">shrinkage_plot()</a></code> contrasts EXNEX posterior estimates against unpooled Kaplan-Meier medians to visualise partial pooling.</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3.1" id="exnexsurv-131">exnexSurv 1.3.1<a class="anchor" aria-label="anchor" href="#exnexsurv-131"></a></h2>
 <div class="section level3">
 <h3 id="breaking-changes-1-3-1">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1-3-1"></a></h3>
@@ -71,7 +108,7 @@
 </ul></div>
 </div>
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="1.3.0" id="exnexsurv-130">exnexSurv 1.3.0<a class="anchor" aria-label="anchor" href="#exnexsurv-130"></a></h2>
+<h2 class="pkg-version" data-toc-text="1.3.0" id="exnexsurv-130">exnexSurv 1.3.0<a class="anchor" aria-label="anchor" href="#exnexsurv-130"></a></h2><p class="text-muted">CRAN release: 2026-09-10</p>
 <ul><li>New inference and model-selection tools (all in pure R, no changes to the validated C++ sampler):
 <ul><li>
 <code><a href="../reference/survival_curves.html">survival_curves()</a></code> computes posterior survival curves <code>S(t)</code> (with <code><a href="../reference/plot.survival_exnex.html">plot.survival_exnex()</a></code> for plotting);</li>

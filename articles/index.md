@@ -20,7 +20,7 @@ MCMC stability checks, running chains in parallel, and inference tools.
 
 - [Convergence and
   Diagnostics](https://victorney.github.io/exnexSurv/articles/convergence-and-diagnostics.md):
-- [Running Chains in
-  Parallel](https://victorney.github.io/exnexSurv/articles/parallel-chains.md):
+- [Running chains in
+  parallel](https://victorney.github.io/exnexSurv/articles/parallel-chains.md):
 - [Tools for
   Experimenters](https://victorney.github.io/exnexSurv/articles/tools-for-experimenters.md):

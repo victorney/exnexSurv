@@ -6,7 +6,20 @@ survival models with optional covariates.
 ## Usage
 
 ``` r
-cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
+cpp_exnex_gibbs(
+  time,
+  event,
+  group,
+  X,
+  priors,
+  pooling,
+  verbose,
+  iter,
+  warmup,
+  chains,
+  chain_label,
+  progress_hook = NULL
+)
 ```
 
 ## Arguments
@@ -40,6 +53,22 @@ cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
   \\v\_{0j}\\ of the model. Absent fields keep the defaults; unknown
   fields are ignored.
 
+- pooling:
+
+  Pooling mode: one of `"exnex"` (EXNEX hierarchy with mixture
+  indicators \\Z_j\\, exchangeable center \\\mu\\ and between-basket
+  variance \\\tau^2\\), `"complete"` (a single shared basket effect with
+  prior \\\mathcal N(m\_{\mu}, v\_{\mu})\\; the EXNEX-specific priors
+  are ignored) or `"none"` (independent basket effects with priors
+  \\\mathcal N(m\_{0j}, v\_{0j})\\; the EXNEX-specific priors are
+  ignored).
+
+- verbose:
+
+  If `TRUE`, report chain progress every 10% of the iterations on the
+  standard output (or through `progress_hook`); silence with
+  `verbose = FALSE`. Default `TRUE`.
+
 - iter:
 
   Total number of MCMC iterations
@@ -51,6 +80,17 @@ cpp_exnex_gibbs(time, event, group, X, priors, iter, warmup, chains)
 - chains:
 
   Number of independent chains to run
+
+- chain_label:
+
+  Optional label (e.g. the chain number) shown in the progress lines;
+  empty string omits it.
+
+- progress_hook:
+
+  Optional R function called with one argument (the progress line) at
+  every 10% milestone instead of printing to the standard output; used
+  by the parallel runner to relay progress to the master session.
 
 ## Value
 
