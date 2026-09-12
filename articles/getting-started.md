@@ -93,7 +93,7 @@ print(fit_formula, show_trace = FALSE)
 #> Draws: 800 total post-warmup samples
 #>        800 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
-#> MCMC: iter = 1200 , warmup = 400 , chains = 1 
+#> MCMC: iter = 1200 , warmup = 400 , thin = 1 , chains = 1 
 #> 
 #>  parameter       mean         sd        q05        q50        q95      rhat
 #>    theta_1  0.9861505 0.06849275  0.8788059  0.9862140  1.0958766 0.9993574
@@ -147,7 +147,7 @@ print(fit_parallel, show_trace = FALSE)
 #> Draws: 1600 total post-warmup samples
 #>        800 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
-#> MCMC: iter = 1200 , warmup = 400 , chains = 2 
+#> MCMC: iter = 1200 , warmup = 400 , thin = 1 , chains = 2 
 #> 
 #>  parameter       mean         sd        q05        q50        q95      rhat
 #>    theta_1  0.9870040 0.06958675  0.8748666  0.9858982  1.0979172 0.9995272
@@ -182,7 +182,9 @@ the chains run, in both sequential and parallel execution.
 The fitted object stores the combined post-warmup draws from all chains
 in one table. Because each chain contributes the same number of
 post-warmup samples, the total number of rows is
-`(iter - warmup) * chains`.
+`ceiling((iter - warmup) / thin) * chains`. The `thin` argument keeps
+every `thin`-th post-warmup draw (default `1`, keep all), which reduces
+memory and posterior autocorrelation without changing the sampler.
 
 ``` r
 

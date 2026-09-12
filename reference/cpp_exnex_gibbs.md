@@ -16,6 +16,7 @@ cpp_exnex_gibbs(
   verbose,
   iter,
   warmup,
+  thin,
   chains,
   chain_label,
   progress_hook = NULL
@@ -76,6 +77,11 @@ cpp_exnex_gibbs(
 - warmup:
 
   Number of iterations to discard
+
+- thin:
+
+  Keep every `thin`-th post-warmup draw (thinning interval); must be a
+  positive integer
 
 - chains:
 

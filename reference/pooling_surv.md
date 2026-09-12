@@ -20,6 +20,7 @@ pooling_surv(
   priors = list(),
   iter = 2000,
   warmup = 1000,
+  thin = 1,
   chains = 1,
   parallel_chains = FALSE,
   group_col = NULL,
@@ -36,6 +37,7 @@ pooling_surv(
   priors = list(),
   iter = 2000,
   warmup = 1000,
+  thin = 1,
   chains = 1,
   parallel_chains = FALSE,
   group_col = NULL,
@@ -100,7 +102,13 @@ pooling_surv(
 - warmup:
 
   Number of warmup iterations to discard. Default is 1000. Posterior
-  samples will have (iter - warmup) rows.
+  samples will have \`ceiling((iter - warmup) / thin)\` rows per chain.
+
+- thin:
+
+  Thinning interval applied after warmup: keep every \`thin\`-th
+  post-warmup draw. Default is 1 (keep all draws). Use \`thin \> 1\` to
+  reduce memory and autocorrelation.
 
 - chains:
 
@@ -215,7 +223,7 @@ print(fit, show_trace = FALSE)
 #> Draws: 150 total post-warmup samples
 #>        150 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
-#> MCMC: iter = 300 , warmup = 150 , chains = 1 
+#> MCMC: iter = 300 , warmup = 150 , thin = 1 , chains = 1 
 #> 
 #>  parameter      mean         sd       q05       q50       q95     rhat ess_bulk
 #>    theta_1 1.2335895 0.13974939 1.0095657 1.2187444 1.4675805 1.016317 78.54732

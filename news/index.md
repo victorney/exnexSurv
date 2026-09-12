@@ -2,6 +2,8 @@
 
 ## exnexSurv 1.4.0
 
+*Released 2026-09-12*
+
 ### New features
 
 - [`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md)
@@ -42,6 +44,11 @@
   ignored fields.
 - [`print()`](https://rdrr.io/r/base/print.html) output now labels the
   fitted pooling variant.
+- New `thin` argument in
+  [`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md):
+  keep every `thin`-th post-warmup draw (default `1`, keep all).
+  Thinning reduces memory and posterior autocorrelation without changing
+  the sampler.
 - New `verbose` argument in
   [`pooling_surv()`](https://victorney.github.io/exnexSurv/reference/pooling_surv.md)
   (default `TRUE`): a live progress bar (`progressr`) reports progress

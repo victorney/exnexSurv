@@ -12,6 +12,7 @@ pooling_surv_bridge(
   priors,
   iter,
   warmup,
+  thin,
   chains,
   parallel_chains,
   group_col,
@@ -44,6 +45,10 @@ pooling_surv_bridge(
 - warmup:
 
   Number of warmup iterations.
+
+- thin:
+
+  Thinning interval for the post-warmup draws.
 
 - chains:
 

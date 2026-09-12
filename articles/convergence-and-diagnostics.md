@@ -85,7 +85,7 @@ print(fit, show_trace = FALSE)
 #> Draws: 4000 total post-warmup samples
 #>        2000 post-warmup samples per chain
 #> Groups: 3 | Covariates: 1 
-#> MCMC: iter = 3000 , warmup = 1000 , chains = 2 
+#> MCMC: iter = 3000 , warmup = 1000 , thin = 1 , chains = 2 
 #> 
 #>  parameter       mean         sd        q05        q50        q95      rhat
 #>    theta_1  1.2463566 0.06462694  1.1403574  1.2466079  1.3532442 1.0002037

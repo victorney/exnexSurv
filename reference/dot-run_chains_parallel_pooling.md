@@ -12,6 +12,7 @@ Run all chains concurrently on future workers
   verbose,
   iter,
   warmup,
+  thin,
   chains,
   chain_seeds
 )

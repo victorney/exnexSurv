@@ -15,6 +15,7 @@ new_pooling_surv(
   resolved_priors = priors,
   iter,
   warmup,
+  thin = 1L,
   chains,
   blueprint
 )
@@ -56,6 +57,10 @@ new_pooling_surv(
 - warmup:
 
   Number of warmup iterations discarded.
+
+- thin:
+
+  Thinning interval applied to the post-warmup draws.
 
 - chains:
 
