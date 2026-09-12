@@ -110,10 +110,11 @@ pooling_surv.default <- function(x, ...) {
 
 #' Shared validation for common pooling_surv arguments
 #' @keywords internal
-validate_args <- function(priors, iter, warmup, chains, parallel_chains, group_col, seed) {
+validate_args <- function(priors, iter, warmup, thin, chains, parallel_chains, group_col, seed) {
   checkmate::assert_list(priors)
   checkmate::assert_int(iter, lower = 1)
   checkmate::assert_int(warmup, lower = 0)
+  checkmate::assert_int(thin, lower = 1)
   checkmate::assert_int(chains, lower = 1)
   checkmate::assert_flag(parallel_chains)
   checkmate::assert_character(group_col, len = 1, null.ok = TRUE)
@@ -157,7 +158,11 @@ validate_pooling <- function(pooling) {
 #'   irrelevant for the selected \code{pooling} mode are ignored with a warning.
 #' @param iter Total number of MCMC iterations. Default is 2000.
 #' @param warmup Number of warmup iterations to discard. Default is 1000.
-#'   Posterior samples will have (iter - warmup) rows.
+#'   Posterior samples will have `ceiling((iter - warmup) / thin)` rows per
+#'   chain.
+#' @param thin Thinning interval applied after warmup: keep every `thin`-th
+#'   post-warmup draw. Default is 1 (keep all draws). Use `thin > 1` to
+#'   reduce memory and autocorrelation.
 #' @param chains Number of independent MCMC chains. Default is 1.
 #' @param parallel_chains Logical. If `TRUE`, all `chains` run concurrently
 #'   on background R sessions (via the `future` framework); if `FALSE`
@@ -182,6 +187,7 @@ pooling_surv.formula <- function(
   priors = list(),
   iter = 2000,
   warmup = 1000,
+  thin = 1,
   chains = 1,
   parallel_chains = FALSE,
   group_col = NULL,
@@ -192,7 +198,7 @@ pooling_surv.formula <- function(
   checkmate::assert_formula(formula)
   checkmate::assert_data_frame(data, min.rows = 1, min.cols = 2)
   validate_pooling(pooling)
-  validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
+  validate_args(priors, iter, warmup, thin, chains, parallel_chains, group_col, seed)
   checkmate::assert_flag(verbose)
 
   if (!is.null(group_col) && !group_col %in% colnames(data)) {
@@ -218,6 +224,7 @@ pooling_surv.formula <- function(
     priors = priors,
     iter = iter,
     warmup = warmup,
+    thin = thin,
     chains = chains,
     parallel_chains = parallel_chains,
     group_col = group_col,
@@ -245,6 +252,7 @@ pooling_surv.data.frame <- function(
   priors = list(),
   iter = 2000,
   warmup = 1000,
+  thin = 1,
   chains = 1,
   parallel_chains = FALSE,
   group_col = NULL,
@@ -259,7 +267,7 @@ pooling_surv.data.frame <- function(
   }
 
   validate_pooling(pooling)
-  validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
+  validate_args(priors, iter, warmup, thin, chains, parallel_chains, group_col, seed)
   checkmate::assert_flag(verbose)
 
   n_y <- nrow(y)
@@ -295,6 +303,7 @@ pooling_surv.data.frame <- function(
     priors = priors,
     iter = iter,
     warmup = warmup,
+    thin = thin,
     chains = chains,
     parallel_chains = parallel_chains,
     group_col = group_col,

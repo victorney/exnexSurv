@@ -14,6 +14,7 @@ cpp_exnex_gibbs(
   verbose,
   iter,
   warmup,
+  thin,
   chains,
   chain_label,
   progress_hook = NULL
@@ -55,6 +56,9 @@ silence with \code{verbose = FALSE}. Default \code{TRUE}.}
 \item{iter}{Total number of MCMC iterations}
 
 \item{warmup}{Number of iterations to discard}
+
+\item{thin}{Keep every \code{thin}-th post-warmup draw (thinning
+interval); must be a positive integer}
 
 \item{chains}{Number of independent chains to run}
 

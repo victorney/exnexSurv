@@ -16,6 +16,7 @@ base_args <- function(priors = list(), verbose = FALSE,
     verbose = FALSE,
     iter = iter,
     warmup = warmup,
+    thin = 1L,
     chains = 1,
     chain_label = ""
   )
@@ -180,6 +181,7 @@ test_that("vector priors pull basket effects toward their own NEX component", {
     verbose = FALSE,
     iter = 1000,
     warmup = 500,
+    thin = 1L,
     chains = 1,
     chain_label = ""
   )
@@ -250,6 +252,7 @@ test_that("informative nonexchangeable prior pulls basket effects toward its mea
     verbose = FALSE,
     iter = 1000,
     warmup = 500,
+    thin = 1L,
     chains = 1,
     chain_label = ""
   )

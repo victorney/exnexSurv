@@ -31,4 +31,5 @@ Suggests:
 VignetteBuilder: knitr
 LinkingTo: Rcpp, RcppArmadillo
 Encoding: UTF-8
+Language: en-US
 Config/roxygen2/version: 8.1.0

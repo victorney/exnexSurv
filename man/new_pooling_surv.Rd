@@ -12,6 +12,7 @@ new_pooling_surv(
   resolved_priors = priors,
   iter,
   warmup,
+  thin = 1L,
   chains,
   blueprint
 )
@@ -41,6 +42,8 @@ used (defaults merged with any overrides supplied in \code{priors}).}
 \item{iter}{Total MCMC iterations performed.}
 
 \item{warmup}{Number of warmup iterations discarded.}
+
+\item{thin}{Thinning interval applied to the post-warmup draws.}
 
 \item{chains}{Number of chains run.}
 

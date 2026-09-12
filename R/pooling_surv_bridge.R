@@ -11,6 +11,7 @@
 #'   \code{pooling_surv()}.
 #' @param iter Total number of MCMC iterations.
 #' @param warmup Number of warmup iterations.
+#' @param thin Thinning interval for the post-warmup draws.
 #' @param chains Number of chains to run.
 #' @param parallel_chains Number of chains to run in parallel at the R level.
 #' @param group_col Name of the original group column.
@@ -25,6 +26,7 @@ pooling_surv_bridge <- function(
   priors,
   iter,
   warmup,
+  thin,
   chains,
   parallel_chains,
   group_col,
@@ -156,6 +158,7 @@ pooling_surv_bridge <- function(
             pooling = pooling,
             iter = iter,
             warmup = warmup,
+            thin = thin,
             seed = chain_seeds[chain_id],
             chain_label = as.character(chain_id),
             verbose = FALSE,
@@ -180,6 +183,7 @@ pooling_surv_bridge <- function(
       verbose = verbose,
       iter = iter,
       warmup = warmup,
+      thin = thin,
       chains = chains,
       chain_seeds = chain_seeds
     )
@@ -218,6 +222,7 @@ pooling_surv_bridge <- function(
     resolved_priors = chain_diagnostics[[1L]]$resolved_priors,
     iter = iter,
     warmup = warmup,
+    thin = thin,
     chains = chains,
     blueprint = processed$blueprint
   )
@@ -330,7 +335,7 @@ pooling_surv_bridge <- function(
 #' different normal-kind sampler, which would make the same seed produce
 #' different draws than sequential execution).
 #' @keywords internal
-.run_single_chain_pooling <- function(cpp_data, priors, pooling, iter, warmup, seed, verbose = TRUE, chain_label = "", progress_hook = NULL, rng_kind = NULL) {
+.run_single_chain_pooling <- function(cpp_data, priors, pooling, iter, warmup, seed, thin = 1L, verbose = TRUE, chain_label = "", progress_hook = NULL, rng_kind = NULL) {
   # future workers may default to a different normal-kind sampler than the
   # master session; pin the master's RNG kind so the same seed produces
   # identical draws in sequential and parallel execution
@@ -349,6 +354,7 @@ pooling_surv_bridge <- function(
     verbose = verbose,
     iter = iter,
     warmup = warmup,
+    thin = thin,
     chains = 1L,
     chain_label = chain_label,
     progress_hook = if (is.null(progress_hook)) NULL else .wrap_progress_hook(progress_hook)
@@ -369,6 +375,7 @@ pooling_surv_bridge <- function(
   verbose,
   iter,
   warmup,
+  thin,
   chains,
   chain_seeds
 ) {
@@ -385,7 +392,7 @@ pooling_surv_bridge <- function(
   relay_chains <- function(progressor = NULL) {
     future.apply::future_lapply(
       X = seq_len(chains),
-      FUN = function(chain_id, cpp_data, priors, pooling, iter, warmup, chain_seeds, master_rng_kind, progressor) {
+      FUN = function(chain_id, cpp_data, priors, pooling, iter, warmup, thin, chain_seeds, master_rng_kind, progressor) {
         hook <- if (!is.null(progressor)) {
           function(msg) progressor(msg)
         } else {
@@ -397,6 +404,7 @@ pooling_surv_bridge <- function(
           pooling = pooling,
           iter = iter,
           warmup = warmup,
+          thin = thin,
           seed = chain_seeds[chain_id],
           verbose = FALSE,
           chain_label = as.character(chain_id),
@@ -409,6 +417,7 @@ pooling_surv_bridge <- function(
       pooling = pooling,
       iter = iter,
       warmup = warmup,
+      thin = thin,
       chain_seeds = chain_seeds,
       master_rng_kind = master_rng_kind,
       progressor = progressor

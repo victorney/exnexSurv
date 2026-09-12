@@ -11,6 +11,7 @@
   verbose,
   iter,
   warmup,
+  thin,
   chains,
   chain_seeds
 )

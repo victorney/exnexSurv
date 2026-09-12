@@ -4,7 +4,16 @@
 \alias{validate_args}
 \title{Shared validation for common pooling_surv arguments}
 \usage{
-validate_args(priors, iter, warmup, chains, parallel_chains, group_col, seed)
+validate_args(
+  priors,
+  iter,
+  warmup,
+  thin,
+  chains,
+  parallel_chains,
+  group_col,
+  seed
+)
 }
 \description{
 Shared validation for common pooling_surv arguments

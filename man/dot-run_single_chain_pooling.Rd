@@ -11,6 +11,7 @@
   iter,
   warmup,
   seed,
+  thin = 1L,
   verbose = TRUE,
   chain_label = "",
   progress_hook = NULL,

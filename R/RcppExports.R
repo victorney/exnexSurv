@@ -33,6 +33,8 @@
 #'   silence with \code{verbose = FALSE}. Default \code{TRUE}.
 #' @param iter Total number of MCMC iterations
 #' @param warmup Number of iterations to discard
+#' @param thin Keep every \code{thin}-th post-warmup draw (thinning
+#'   interval); must be a positive integer
 #' @param chains Number of independent chains to run
 #' @param chain_label Optional label (e.g. the chain number) shown in the
 #'   progress lines; empty string omits it.
@@ -43,7 +45,7 @@
 #'
 #' @return List containing posterior draws, priors, metadata, and diagnostics
 #' @keywords internal
-cpp_exnex_gibbs <- function(time, event, group, X, priors, pooling, verbose, iter, warmup, chains, chain_label, progress_hook = NULL) {
-    .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, pooling, verbose, iter, warmup, chains, chain_label, progress_hook)
+cpp_exnex_gibbs <- function(time, event, group, X, priors, pooling, verbose, iter, warmup, thin, chains, chain_label, progress_hook = NULL) {
+    .Call(`_exnexSurv_cpp_exnex_gibbs`, time, event, group, X, priors, pooling, verbose, iter, warmup, thin, chains, chain_label, progress_hook)
 }
 

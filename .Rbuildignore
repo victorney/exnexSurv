@@ -17,3 +17,4 @@
 demo-exnexSurv\.R
 demo-exnexSurv-tools\.R
 Rplots\.pdf
+^cran-comments\.md$

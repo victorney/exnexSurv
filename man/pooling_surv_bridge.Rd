@@ -10,6 +10,7 @@ pooling_surv_bridge(
   priors,
   iter,
   warmup,
+  thin,
   chains,
   parallel_chains,
   group_col,
@@ -29,6 +30,8 @@ pooling_surv_bridge(
 \item{iter}{Total number of MCMC iterations.}
 
 \item{warmup}{Number of warmup iterations.}
+
+\item{thin}{Thinning interval for the post-warmup draws.}
 
 \item{chains}{Number of chains to run.}
 

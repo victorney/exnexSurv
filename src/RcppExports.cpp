@@ -12,8 +12,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // cpp_exnex_gibbs
-Rcpp::List cpp_exnex_gibbs(const arma::vec& time, const arma::vec& event, const arma::vec& group, const arma::mat& X, Rcpp::List priors, const std::string& pooling, const bool verbose, const int& iter, const int& warmup, const int& chains, const std::string& chain_label, Rcpp::Nullable<Rcpp::Function> progress_hook);
-RcppExport SEXP _exnexSurv_cpp_exnex_gibbs(SEXP timeSEXP, SEXP eventSEXP, SEXP groupSEXP, SEXP XSEXP, SEXP priorsSEXP, SEXP poolingSEXP, SEXP verboseSEXP, SEXP iterSEXP, SEXP warmupSEXP, SEXP chainsSEXP, SEXP chain_labelSEXP, SEXP progress_hookSEXP) {
+Rcpp::List cpp_exnex_gibbs(const arma::vec& time, const arma::vec& event, const arma::vec& group, const arma::mat& X, Rcpp::List priors, const std::string& pooling, const bool verbose, const int& iter, const int& warmup, const int& thin, const int& chains, const std::string& chain_label, Rcpp::Nullable<Rcpp::Function> progress_hook);
+RcppExport SEXP _exnexSurv_cpp_exnex_gibbs(SEXP timeSEXP, SEXP eventSEXP, SEXP groupSEXP, SEXP XSEXP, SEXP priorsSEXP, SEXP poolingSEXP, SEXP verboseSEXP, SEXP iterSEXP, SEXP warmupSEXP, SEXP thinSEXP, SEXP chainsSEXP, SEXP chain_labelSEXP, SEXP progress_hookSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,16 +26,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< const int& >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< const int& >::type warmup(warmupSEXP);
+    Rcpp::traits::input_parameter< const int& >::type thin(thinSEXP);
     Rcpp::traits::input_parameter< const int& >::type chains(chainsSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type chain_label(chain_labelSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::Function> >::type progress_hook(progress_hookSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_exnex_gibbs(time, event, group, X, priors, pooling, verbose, iter, warmup, chains, chain_label, progress_hook));
+    rcpp_result_gen = Rcpp::wrap(cpp_exnex_gibbs(time, event, group, X, priors, pooling, verbose, iter, warmup, thin, chains, chain_label, progress_hook));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_exnexSurv_cpp_exnex_gibbs", (DL_FUNC) &_exnexSurv_cpp_exnex_gibbs, 12},
+    {"_exnexSurv_cpp_exnex_gibbs", (DL_FUNC) &_exnexSurv_cpp_exnex_gibbs, 13},
     {NULL, NULL, 0}
 };
 
