@@ -124,7 +124,7 @@ When `parallel_chains = TRUE`, all chains are evaluated concurrently on backgrou
 
 With `verbose = TRUE` a live progress bar (`progressr`) updates while the chains run, in both sequential and parallel execution.
 
-The fitted object stores the combined post-warmup draws from all chains in one table. Because each chain contributes the same number of post-warmup samples, the total number of rows is `(iter - warmup) * chains`.
+The fitted object stores the combined post-warmup draws from all chains in one table. Because each chain contributes the same number of post-warmup samples, the total number of rows is `ceiling((iter - warmup) / thin) * chains`. The `thin` argument keeps every `thin`-th post-warmup draw (default `1`, keep all), which reduces memory and posterior autocorrelation without changing the sampler.
 
 ```{r}
 str(fit_formula$data)

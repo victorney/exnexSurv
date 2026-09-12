@@ -16,6 +16,7 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
     verbose = FALSE,
     iter = 6,
     warmup = 2,
+    thin = 1L,
     chains = 1,
     chain_label = ""
   )
@@ -31,6 +32,7 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
     verbose = FALSE,
     iter = 6,
     warmup = 2,
+    thin = 1L,
     chains = 1,
     chain_label = ""
   )
@@ -38,7 +40,7 @@ test_that("cpp_exnex_gibbs returns reproducible draws and diagnostics", {
   expect_type(res1, "list")
   expect_identical(
     names(res1),
-    c("draws", "priors", "iter", "warmup", "chains", "diagnostics")
+    c("draws", "priors", "iter", "warmup", "thin", "chains", "diagnostics")
   )
   expect_true(is.matrix(res1$draws))
   expect_identical(dim(res1$draws), c(4L, 3L))
@@ -65,6 +67,7 @@ test_that("cpp_exnex_gibbs validates input edge cases", {
     pooling = "exnex",
     iter = 4,
     warmup = 2,
+    thin = 1L,
     chains = 1,
     chain_label = ""
   )
@@ -152,4 +155,37 @@ test_that("cpp_exnex_gibbs validates input edge cases", {
     ),
     "All group values must be >= 1."
   )
+})
+
+test_that("cpp_exnex_gibbs thins post-warmup draws", {
+  args <- list(
+    time = c(5, 8, 12),
+    event = c(1, 0, 1),
+    group = c(1, 2, 1),
+    X = matrix(nrow = 3, ncol = 0),
+    priors = list(alpha = 1),
+    pooling = "exnex",
+    verbose = FALSE,
+    iter = 10,
+    warmup = 4,
+    chains = 1,
+    chain_label = ""
+  )
+
+  set.seed(2719)
+  full <- do.call(exnexSurv:::cpp_exnex_gibbs, c(args, list(thin = 1L)))
+  set.seed(2719)
+  thinned <- do.call(exnexSurv:::cpp_exnex_gibbs, c(args, list(thin = 2L)))
+
+  # 6 post-warmup iterations, keep post_idx 0, 2, 4 -> 3 draws
+  expect_identical(dim(thinned$draws), c(3L, 3L))
+  expect_identical(thinned$draws, full$draws[c(1, 3, 5), , drop = FALSE])
+  expect_identical(thinned$thin, 2L)
+
+  err <- tryCatch(
+    do.call(exnexSurv:::cpp_exnex_gibbs, c(args, list(thin = 0L))),
+    error = function(e) e
+  )
+  expect_s3_class(err, "error")
+  expect_match(conditionMessage(err), "thin must be a positive integer", fixed = TRUE)
 })

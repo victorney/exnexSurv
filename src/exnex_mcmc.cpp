@@ -100,6 +100,8 @@ arma::vec draw_normal_from_precision(const arma::mat& precision, const arma::vec
 //'   silence with \code{verbose = FALSE}. Default \code{TRUE}.
 //' @param iter Total number of MCMC iterations
 //' @param warmup Number of iterations to discard
+//' @param thin Keep every \code{thin}-th post-warmup draw (thinning
+//'   interval); must be a positive integer
 //' @param chains Number of independent chains to run
 //' @param chain_label Optional label (e.g. the chain number) shown in the
 //'   progress lines; empty string omits it.
@@ -116,6 +118,7 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
                            Rcpp::List priors, const std::string &pooling,
                            const bool verbose,
                            const int &iter, const int &warmup,
+                           const int &thin,
                            const int &chains, const std::string &chain_label,
                            Rcpp::Nullable<Rcpp::Function> progress_hook = R_NilValue) {
   Rcpp::RNGScope scope;
@@ -199,6 +202,10 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     Rcpp::stop("warmup must be strictly less than iter. Got iter=" +
                std::to_string(iter) + ", warmup=" + std::to_string(warmup));
   }
+  if (thin < 1) {
+    Rcpp::stop("thin must be a positive integer. Got thin=" +
+               std::to_string(thin));
+  }
 
   if (event.n_elem != static_cast<arma::uword>(n)) {
     Rcpp::stop("event must have the same length as time. Got time.n_elem=" +
@@ -236,7 +243,8 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
 
   int K = static_cast<int>(max_group);
   int P = X.n_cols;
-  int n_samples = iter - warmup;
+  int n_post_warmup = iter - warmup;
+  int n_samples = (n_post_warmup + thin - 1) / thin;
   int n_cols_out = K + P + 1;
 
   // Read basket-specific priors: a scalar is replicated across the K baskets;
@@ -489,9 +497,10 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     tau2 = draw_inverse_gamma(shape_tau, rate_tau);
     }
 
-    if (iter_idx >= warmup) {
-      // Save only post-warmup draws.
-      int draw_idx = iter_idx - warmup;
+    int post_idx = iter_idx - warmup;
+    if (post_idx >= 0 && (post_idx % thin) == 0) {
+      // Save post-warmup draws at the requested thinning interval.
+      int draw_idx = post_idx / thin;
       draws(draw_idx, arma::span(0, K - 1)) = theta.t();
 
       if (P > 0) {
@@ -562,6 +571,7 @@ Rcpp::List cpp_exnex_gibbs(const arma::vec &time, const arma::vec &event,
     Rcpp::Named("priors") = priors,
     Rcpp::Named("iter") = iter,
     Rcpp::Named("warmup") = warmup,
+    Rcpp::Named("thin") = thin,
     Rcpp::Named("chains") = chains,
     Rcpp::Named("diagnostics") = diagnostics
   );

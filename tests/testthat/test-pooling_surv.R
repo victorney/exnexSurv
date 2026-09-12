@@ -521,3 +521,65 @@ test_that("verbose shows progress and can be silenced", {
   )
   expect_s3_class(fit_nv, "pooling_surv")
 })
+
+test_that("pooling_surv thins draws and stores the interval", {
+  fit_full <- pooling_surv(
+    survival::Surv(time, event) ~ group,
+    data = trial_data,
+    iter = 30,
+    warmup = 10,
+    thin = 1,
+    chains = 2,
+    seed = 2719,
+    verbose = FALSE
+  )
+  fit_thin <- pooling_surv(
+    survival::Surv(time, event) ~ group,
+    data = trial_data,
+    iter = 30,
+    warmup = 10,
+    thin = 2,
+    chains = 2,
+    seed = 2719,
+    verbose = FALSE
+  )
+
+  expect_identical(fit_thin$thin, 2L)
+  expect_identical(nrow(fit_thin$draws), 20L)   # ceiling(20 / 2) * 2 chains
+  expect_identical(nrow(fit_full$draws), 40L)   # 20 * 2 chains
+
+  # thinning keeps every other post-warmup draw of the same chain
+  chain1_full <- fit_full$draws[1:20, , drop = FALSE]
+  chain1_thin <- fit_thin$draws[1:10, , drop = FALSE]
+  expect_equal(
+    unname(as.matrix(chain1_thin)),
+    unname(as.matrix(chain1_full[c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19), , drop = FALSE]))
+  )
+
+  fit_thin_par <- pooling_surv(
+    survival::Surv(time, event) ~ group,
+    data = trial_data,
+    iter = 30,
+    warmup = 10,
+    thin = 2,
+    chains = 2,
+    parallel_chains = TRUE,
+    seed = 2719,
+    verbose = FALSE
+  )
+  expect_equal(fit_thin_par$draws, fit_thin$draws)
+  expect_identical(fit_thin_par$thin, 2L)
+
+  expect_error_message(
+    pooling_surv(
+      survival::Surv(time, event) ~ group,
+      data = trial_data,
+      iter = 30,
+      warmup = 10,
+      thin = 0,
+      seed = 2719,
+      verbose = FALSE
+    ),
+    "Element 1 is not >= 1"
+  )
+})

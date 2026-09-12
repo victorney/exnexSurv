@@ -141,6 +141,8 @@ print.pooling_surv <- function(
     x$iter,
     ", warmup =",
     x$warmup,
+    ", thin =",
+    if (is.null(x$thin)) 1L else x$thin,
     ", chains =",
     x$chains,
     "\n\n"

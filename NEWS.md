@@ -1,5 +1,7 @@
 # exnexSurv 1.4.0
 
+_Released 2026-09-12_
+
 ## New features
 
 * `pooling_surv()` is the new general entry point for fitting Bayesian
@@ -29,6 +31,9 @@
   under `"complete"` or `"none"`) now trigger a warning naming the ignored
   fields.
 * `print()` output now labels the fitted pooling variant.
+* New `thin` argument in `pooling_surv()`: keep every `thin`-th
+  post-warmup draw (default `1`, keep all). Thinning reduces memory and
+  posterior autocorrelation without changing the sampler.
 * New `verbose` argument in `pooling_surv()` (default `TRUE`): a live
   progress bar (`progressr`) reports progress while the chains run;
   silenced with `verbose = FALSE`.

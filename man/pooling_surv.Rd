@@ -18,6 +18,7 @@ pooling_surv(x, ...)
   priors = list(),
   iter = 2000,
   warmup = 1000,
+  thin = 1,
   chains = 1,
   parallel_chains = FALSE,
   group_col = NULL,
@@ -33,6 +34,7 @@ pooling_surv(x, ...)
   priors = list(),
   iter = 2000,
   warmup = 1000,
+  thin = 1,
   chains = 1,
   parallel_chains = FALSE,
   group_col = NULL,
@@ -81,7 +83,12 @@ irrelevant for the selected \code{pooling} mode are ignored with a warning.}
 \item{iter}{Total number of MCMC iterations. Default is 2000.}
 
 \item{warmup}{Number of warmup iterations to discard. Default is 1000.
-Posterior samples will have (iter - warmup) rows.}
+Posterior samples will have `ceiling((iter - warmup) / thin)` rows per
+chain.}
+
+\item{thin}{Thinning interval applied after warmup: keep every `thin`-th
+post-warmup draw. Default is 1 (keep all draws). Use `thin > 1` to
+reduce memory and autocorrelation.}
 
 \item{chains}{Number of independent MCMC chains. Default is 1.}
 

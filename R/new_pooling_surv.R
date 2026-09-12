@@ -22,6 +22,7 @@
 #'   used (defaults merged with any overrides supplied in \code{priors}).
 #' @param iter Total MCMC iterations performed.
 #' @param warmup Number of warmup iterations discarded.
+#' @param thin Thinning interval applied to the post-warmup draws.
 #' @param chains Number of chains run.
 #' @param blueprint The hardhat blueprint for the original formula/data structure.
 #'
@@ -35,6 +36,7 @@ new_pooling_surv <- function(
   resolved_priors = priors,
   iter,
   warmup,
+  thin = 1L,
   chains,
   blueprint
 ) {
@@ -42,9 +44,10 @@ new_pooling_surv <- function(
   checkmate::assert_data_frame(draws, min.rows = 1, min.cols = 1)
   checkmate::assert_list(data, min.len = 1)
 
-  expected_rows <- (iter - warmup) * chains
+  n_per_chain <- ceiling((iter - warmup) / thin)
+  expected_rows <- n_per_chain * chains
   if (nrow(draws) != expected_rows) {
-    stop("Number of draw rows (", nrow(draws), ") does not match iter - warmup (", expected_rows, ").", call. = FALSE)
+    stop("Number of draw rows (", nrow(draws), ") does not match the expected (iter - warmup) / thin (", expected_rows, ").", call. = FALSE)
   }
 
   expected_cols <- data$n_groups + data$n_covariates + 1
@@ -60,6 +63,7 @@ new_pooling_surv <- function(
     resolved_priors = resolved_priors,
     iter = iter,
     warmup = warmup,
+    thin = as.integer(thin),
     chains = chains,
     blueprint = blueprint,
     class = "pooling_surv"
